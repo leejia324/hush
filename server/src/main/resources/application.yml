@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: hush-server
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
