@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:window_manager/window_manager.dart';
 
-import 'capture_guard/capture_test_page.dart';
+import 'native_check/native_check_page.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await windowManager.ensureInitialized();
+
   runApp(const HushApp());
 }
 
@@ -14,7 +18,7 @@ class HushApp extends StatelessWidget {
     return const MaterialApp(
       title: 'hush',
       debugShowCheckedModeBanner: false,
-      home: CaptureTestPage(),
+      home: NativeCheckPage(),
     );
   }
 }
