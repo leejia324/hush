@@ -18,7 +18,6 @@ class MainFlutterWindow: NSWindow {
     super.awakeFromNib()
   }
 
-  /// 화면 캡처와 화면 공유에서 이 창을 제외할지 Flutter에서 설정할 수 있게 한다.
   private func registerCaptureGuardChannel(messenger: FlutterBinaryMessenger) {
     let channel = FlutterMethodChannel(name: "capture_guard", binaryMessenger: messenger)
     channel.setMethodCallHandler { [weak self] call, result in
@@ -31,7 +30,6 @@ class MainFlutterWindow: NSWindow {
     }
   }
 
-  /// 앱이 포커스를 갖지 않아도 동작하는 전역 단축키를 Flutter에서 등록할 수 있게 한다.
   private func registerGlobalHotKeyChannel(messenger: FlutterBinaryMessenger) {
     let channel = FlutterMethodChannel(name: "global_hotkey", binaryMessenger: messenger)
     globalHotKey.onPressed = {
@@ -51,10 +49,6 @@ class MainFlutterWindow: NSWindow {
   }
 }
 
-/// Carbon `RegisterEventHotKey`로 전역 단축키를 등록한다.
-///
-/// 모든 키 입력을 감시하는 `addGlobalMonitorForEvents`와 달리
-/// 손쉬운 사용 권한 없이 샌드박스에서 동작한다.
 final class GlobalHotKey {
   var onPressed: (() -> Void)?
 
@@ -84,7 +78,6 @@ final class GlobalHotKey {
     )
     guard handlerStatus == noErr else { return false }
 
-    // 'hush'를 4바이트 서명으로 쓴다.
     let hotKeyID = EventHotKeyID(signature: OSType(0x6875_7368), id: 1)
     let status = RegisterEventHotKey(
       keyCode,

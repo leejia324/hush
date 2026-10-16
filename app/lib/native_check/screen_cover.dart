@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 
-/// 화면 가리기 상태. ⌥Space를 누를 때마다 바뀐다.
 final screenCovered = ValueNotifier<bool>(false);
 
-/// ⌥Space 등록 결과. 등록 전에는 null이다.
 final coverHotKeyRegistered = ValueNotifier<bool?>(null);
 
-/// 화면을 가릴 때 대신 보여 주는 진짜 같은 코드 화면.
 class ScreenCover extends StatelessWidget {
   const ScreenCover({super.key});
 

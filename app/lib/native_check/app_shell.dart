@@ -4,9 +4,6 @@ import 'package:window_manager/window_manager.dart';
 import 'global_hotkey.dart';
 import 'screen_cover.dart';
 
-/// 메뉴 막대 아이콘, 창 닫기 동작, 화면 가리기 단축키를 관리한다.
-///
-/// 창을 닫으면 앱을 끝내지 않고 창만 숨긴다. 메뉴 막대의 "종료"로만 끝난다.
 class AppShell with WindowListener {
   TrayIcon? _trayIcon;
   Menu? _menu;
@@ -34,7 +31,6 @@ class AppShell with WindowListener {
       ..setContextMenuTrigger(ContextMenuTrigger.clicked)
       ..setVisible(true);
 
-    // 참조가 사라지면 네이티브 객체가 해제되므로 필드에 보관한다.
     _menu = menu;
     _trayIcon = trayIcon;
   }

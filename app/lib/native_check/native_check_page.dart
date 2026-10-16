@@ -4,7 +4,6 @@ import 'package:local_auth/local_auth.dart';
 import '../capture_guard/capture_guard.dart';
 import 'screen_cover.dart';
 
-/// macOS 네이티브 기능이 실제로 동작하는지 확인하기 위한 테스트 화면.
 class NativeCheckPage extends StatefulWidget {
   const NativeCheckPage({super.key, this.guard = const CaptureGuard()});
 
