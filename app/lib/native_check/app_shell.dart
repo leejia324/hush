@@ -1,7 +1,10 @@
 import 'package:tray_manager/tray_manager.dart';
 import 'package:window_manager/window_manager.dart';
 
-/// 메뉴 막대 아이콘과 창 닫기 동작을 관리한다.
+import 'global_hotkey.dart';
+import 'screen_cover.dart';
+
+/// 메뉴 막대 아이콘, 창 닫기 동작, 화면 가리기 단축키를 관리한다.
 ///
 /// 창을 닫으면 앱을 끝내지 않고 창만 숨긴다. 메뉴 막대의 "종료"로만 끝난다.
 class AppShell with WindowListener {
@@ -12,6 +15,10 @@ class AppShell with WindowListener {
     await windowManager.setPreventClose(true);
     windowManager.addListener(this);
     _createTrayIcon();
+    coverHotKeyRegistered.value = await const GlobalHotKey()
+        .registerOptionSpace(
+          onPressed: () => screenCovered.value = !screenCovered.value,
+        );
   }
 
   void _createTrayIcon() {

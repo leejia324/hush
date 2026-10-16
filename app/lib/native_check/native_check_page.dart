@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:window_manager/window_manager.dart';
 
 import '../capture_guard/capture_guard.dart';
+import 'screen_cover.dart';
 
 /// macOS 네이티브 기능이 실제로 동작하는지 확인하기 위한 테스트 화면.
 class NativeCheckPage extends StatefulWidget {
@@ -29,6 +30,15 @@ class _NativeCheckPageState extends State<NativeCheckPage> {
 
   @override
   Widget build(BuildContext context) {
+    return ValueListenableBuilder(
+      valueListenable: screenCovered,
+      builder: (context, covered, _) {
+        return covered ? const ScreenCover() : _buildChecks();
+      },
+    );
+  }
+
+  Widget _buildChecks() {
     return Scaffold(
       backgroundColor: _captureHidden ? Colors.red.shade100 : Colors.white,
       body: ListView(
@@ -40,11 +50,20 @@ class _NativeCheckPageState extends State<NativeCheckPage> {
           ),
           _Section(
             title: '창 불투명도 ${(_opacity * 100).round()}%',
-            child: Slider(
-              value: _opacity,
-              min: 0.3,
-              onChanged: _changeOpacity,
-            ),
+            child: Slider(value: _opacity, min: 0.3, onChanged: _changeOpacity),
+          ),
+          ValueListenableBuilder(
+            valueListenable: coverHotKeyRegistered,
+            builder: (context, registered, _) {
+              return _Section(
+                title: '⌥Space 화면 가리기',
+                child: Text(switch (registered) {
+                  null => '등록 중',
+                  true => '등록됨. 다른 앱을 보고 있을 때도 ⌥Space로 가리고 다시 누르면 돌아온다',
+                  false => '등록 실패. 다른 앱이 ⌥Space를 쓰고 있을 수 있다',
+                }),
+              );
+            },
           ),
         ],
       ),
