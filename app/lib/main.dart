@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:window_manager/window_manager.dart';
 
+import 'native_check/app_shell.dart';
 import 'native_check/native_check_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await windowManager.ensureInitialized();
+  await AppShell().start();
 
   runApp(const HushApp());
 }
