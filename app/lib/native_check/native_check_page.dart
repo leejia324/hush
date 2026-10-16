@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:local_auth/local_auth.dart';
 import 'package:window_manager/window_manager.dart';
 
 import '../capture_guard/capture_guard.dart';
@@ -17,6 +18,8 @@ class NativeCheckPage extends StatefulWidget {
 class _NativeCheckPageState extends State<NativeCheckPage> {
   bool _captureHidden = false;
   double _opacity = 1;
+  final _auth = LocalAuthentication();
+  String? _unlockResult;
 
   Future<void> _toggleCapture(bool value) async {
     await widget.guard.setEnabled(enabled: value);
@@ -26,6 +29,20 @@ class _NativeCheckPageState extends State<NativeCheckPage> {
   Future<void> _changeOpacity(double value) async {
     setState(() => _opacity = value);
     await windowManager.setOpacity(value);
+  }
+
+  Future<void> _unlock() async {
+    String result;
+    try {
+      final unlocked = await _auth.authenticate(
+        localizedReason: 'hush 잠금을 해제합니다',
+        biometricOnly: true,
+      );
+      result = unlocked ? '잠금 해제 성공' : '잠금 해제 실패';
+    } on LocalAuthException catch (e) {
+      result = '오류: ${e.code.name}';
+    }
+    setState(() => _unlockResult = result);
   }
 
   @override
@@ -64,6 +81,19 @@ class _NativeCheckPageState extends State<NativeCheckPage> {
                 }),
               );
             },
+          ),
+          _Section(
+            title: 'Touch ID 잠금 해제',
+            child: Row(
+              children: [
+                FilledButton(
+                  onPressed: _unlock,
+                  child: const Text('Touch ID로 잠금 해제'),
+                ),
+                const SizedBox(width: 16),
+                Text(_unlockResult ?? ''),
+              ],
+            ),
           ),
         ],
       ),
