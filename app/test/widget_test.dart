@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:hush/main.dart';
+import 'package:hush/native_check/screen_cover.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -35,5 +36,16 @@ void main() {
     expect(calls, hasLength(1));
     expect(calls.single.method, 'setEnabled');
     expect(calls.single.arguments, isTrue);
+  });
+
+  testWidgets('화면 가리기를 켜면 코드 화면으로 바뀐다', (tester) async {
+    addTearDown(() => screenCovered.value = false);
+    await tester.pumpWidget(const HushApp());
+
+    screenCovered.value = true;
+    await tester.pump();
+
+    expect(find.byType(ScreenCover), findsOneWidget);
+    expect(find.text('캡처 숨기기 OFF'), findsNothing);
   });
 }
