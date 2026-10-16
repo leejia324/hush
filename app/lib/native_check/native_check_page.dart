@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
-import 'package:window_manager/window_manager.dart';
 
 import '../capture_guard/capture_guard.dart';
 import 'screen_cover.dart';
@@ -17,18 +16,12 @@ class NativeCheckPage extends StatefulWidget {
 
 class _NativeCheckPageState extends State<NativeCheckPage> {
   bool _captureHidden = false;
-  double _opacity = 1;
   final _auth = LocalAuthentication();
   String? _unlockResult;
 
   Future<void> _toggleCapture(bool value) async {
     await widget.guard.setEnabled(enabled: value);
     setState(() => _captureHidden = value);
-  }
-
-  Future<void> _changeOpacity(double value) async {
-    setState(() => _opacity = value);
-    await windowManager.setOpacity(value);
   }
 
   Future<void> _unlock() async {
@@ -64,10 +57,6 @@ class _NativeCheckPageState extends State<NativeCheckPage> {
           _Section(
             title: _captureHidden ? '캡처 숨기기 ON' : '캡처 숨기기 OFF',
             child: Switch(value: _captureHidden, onChanged: _toggleCapture),
-          ),
-          _Section(
-            title: '창 불투명도 ${(_opacity * 100).round()}%',
-            child: Slider(value: _opacity, min: 0.3, onChanged: _changeOpacity),
           ),
           ValueListenableBuilder(
             valueListenable: coverHotKeyRegistered,
