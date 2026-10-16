@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: ko-KR
+
+reviews:
+  profile: chill
+  # PR 본문은 직접 쓴 내용 그대로 두고, 요약은 리뷰 코멘트에만 남긴다
+  high_level_summary: false
+  high_level_summary_in_walkthrough: true
+  poem: false
+  in_progress_fortune: false
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - main
+  path_instructions:
+    - path: "app/**/*.dart"
+      instructions: |
+        Flutter macOS 앱이다. 상태 관리는 flutter_bloc, 구조는 presentation, domain, data 레이어와 Repository 패턴을 따른다.
+        메시지 평문이 로그, 알림, 예외 메시지에 남지 않는지 확인한다.
+    - path: "app/macos/**/*.swift"
+      instructions: |
+        App Store 샌드박스에서 동작해야 한다. 손쉬운 사용 같은 추가 권한이 필요한 API를 쓰지 않는지 확인한다.
+    - path: "server/**/*.java"
+      instructions: |
+        Java 21, Spring Boot 3.5 서버다. 서버는 메시지 암호문만 다루므로 평문을 저장하거나 로그에 남기지 않는지 확인한다.
+        웹소켓과 REST 요청에서 방 멤버 권한 검사가 빠지지 않았는지 확인한다.
