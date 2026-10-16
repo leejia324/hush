@@ -20,6 +20,7 @@ class _NativeCheckPageState extends State<NativeCheckPage> {
 
   Future<void> _toggleCapture(bool value) async {
     await widget.guard.setEnabled(enabled: value);
+    if (!mounted) return;
     setState(() => _captureHidden = value);
   }
 
@@ -34,6 +35,7 @@ class _NativeCheckPageState extends State<NativeCheckPage> {
     } on LocalAuthException catch (e) {
       result = '오류: ${e.code.name}';
     }
+    if (!mounted) return;
     setState(() => _unlockResult = result);
   }
 
