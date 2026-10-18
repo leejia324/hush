@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/platform/screen_cover.dart';
 import '../../../core/theme/ide_colors.dart';
+import '../../../core/theme/ide_theme.dart';
 import '../domain/chat_repository.dart';
 import 'bloc/chat_cubit.dart';
 import 'bloc/chat_state.dart';
@@ -93,7 +94,11 @@ class _IdeLayoutState extends State<_IdeLayout> {
                             Expanded(
                               child: ColoredBox(
                                 color: colors.editorBackground,
-                                child: lines == null
+                                child: state.failed
+                                    ? _LoadFailed(
+                                        onRetry: context.read<ChatCubit>().load,
+                                      )
+                                    : lines == null
                                     ? const SizedBox.shrink()
                                     : ConversationView(lines: lines),
                               ),
@@ -147,6 +152,30 @@ class _ToolStrip extends StatelessWidget {
             color: projectPanelOpen ? colors.accent : colors.comment,
             icon: const Icon(Icons.folder_outlined),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LoadFailed extends StatelessWidget {
+  const _LoadFailed({required this.onRetry});
+
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = IdeColors.of(context);
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            '// 채팅방을 불러오지 못함',
+            style: IdeTheme.code(colors).copyWith(color: colors.comment),
+          ),
+          const SizedBox(height: 8),
+          TextButton(onPressed: onRetry, child: const Text('다시 불러오기')),
         ],
       ),
     );

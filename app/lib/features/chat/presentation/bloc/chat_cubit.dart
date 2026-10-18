@@ -10,19 +10,32 @@ class ChatCubit extends Cubit<ChatState> {
 
   final ChatRepository _repository;
   StreamSubscription<void>? _messagesSubscription;
+  var _selectRequest = 0;
 
   Future<void> load() async {
-    final rooms = await _repository.fetchRooms();
-    emit(state.copyWith(loading: false, rooms: rooms));
-    if (rooms.isNotEmpty) {
-      await selectRoom(rooms.first.id);
+    emit(state.copyWith(loading: true, failed: false));
+    try {
+      final rooms = await _repository.fetchRooms();
+      if (isClosed) return;
+      emit(state.copyWith(loading: false, rooms: rooms));
+      if (rooms.isNotEmpty) {
+        await selectRoom(rooms.first.id);
+      }
+    } catch (_) {
+      if (isClosed) return;
+      emit(state.copyWith(loading: false, failed: true));
     }
   }
 
   Future<void> selectRoom(String roomId) async {
+    final request = ++_selectRequest;
+    bool isStale() => isClosed || request != _selectRequest;
+
     final room = state.rooms.firstWhere((room) => room.id == roomId);
     final members = await _repository.fetchMembers(roomId);
+    if (isStale()) return;
     await _messagesSubscription?.cancel();
+    if (isStale()) return;
 
     emit(
       state.copyWith(
@@ -36,13 +49,15 @@ class ChatCubit extends Cubit<ChatState> {
     _messagesSubscription = _repository.watchMessages(roomId).listen((
       messages,
     ) {
-      if (state.selectedRoomId == roomId) {
+      if (!isClosed && state.selectedRoomId == roomId) {
         emit(state.copyWith(messages: messages));
       }
     });
 
     await _repository.markAsRead(roomId);
-    emit(state.copyWith(rooms: await _repository.fetchRooms()));
+    final rooms = await _repository.fetchRooms();
+    if (isClosed) return;
+    emit(state.copyWith(rooms: rooms));
   }
 
   Future<void> send(String text) async {

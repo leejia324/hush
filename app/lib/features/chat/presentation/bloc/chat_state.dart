@@ -5,6 +5,7 @@ import '../../domain/room.dart';
 class ChatState {
   const ChatState({
     this.loading = true,
+    this.failed = false,
     this.rooms = const [],
     this.selectedRoomId,
     this.members = const [],
@@ -13,6 +14,7 @@ class ChatState {
   });
 
   final bool loading;
+  final bool failed;
   final List<Room> rooms;
   final String? selectedRoomId;
   final List<Member> members;
@@ -28,6 +30,7 @@ class ChatState {
 
   ChatState copyWith({
     bool? loading,
+    bool? failed,
     List<Room>? rooms,
     String? selectedRoomId,
     List<Member>? members,
@@ -36,6 +39,7 @@ class ChatState {
   }) {
     return ChatState(
       loading: loading ?? this.loading,
+      failed: failed ?? this.failed,
       rooms: rooms ?? this.rooms,
       selectedRoomId: selectedRoomId ?? this.selectedRoomId,
       members: members ?? this.members,
