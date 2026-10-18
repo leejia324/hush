@@ -29,11 +29,12 @@ class MessageSegment {
   @override
   String toString() {
     final styles = [
+      'length: ${text.length}',
       if (secret) 'secret',
       if (bold) 'bold',
       if (italic) 'italic',
       if (strike) 'strike',
     ];
-    return 'MessageSegment("$text"${styles.isEmpty ? '' : ', ${styles.join(', ')}'})';
+    return 'MessageSegment(${styles.join(', ')})';
   }
 }

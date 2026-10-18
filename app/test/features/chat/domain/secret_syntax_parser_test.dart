@@ -47,6 +47,13 @@ void main() {
     expect(SecretSyntaxParser.parse('||||'), [const MessageSegment('||||')]);
   });
 
+  test('toString에 평문이 남지 않음', () {
+    const segment = MessageSegment('비밀번호 1234', secret: true);
+
+    expect(segment.toString(), isNot(contains('1234')));
+    expect(segment.toString(), contains('secret'));
+  });
+
   test('비밀이 있는지 확인', () {
     expect(SecretSyntaxParser.hasSecret('a ||b||'), isTrue);
     expect(SecretSyntaxParser.hasSecret('a **b**'), isFalse);
