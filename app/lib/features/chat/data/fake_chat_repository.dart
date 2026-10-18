@@ -27,9 +27,17 @@ class FakeChatRepository implements ChatRepository {
       List.unmodifiable(_members[roomId] ?? const []);
 
   @override
-  Stream<List<Message>> watchMessages(String roomId) async* {
-    yield _snapshot(roomId);
-    yield* _controller(roomId).stream;
+  Stream<List<Message>> watchMessages(String roomId) {
+    StreamSubscription<List<Message>>? updates;
+    late final StreamController<List<Message>> controller;
+    controller = StreamController<List<Message>>(
+      onListen: () {
+        updates = _controller(roomId).stream.listen(controller.add);
+        controller.add(_snapshot(roomId));
+      },
+      onCancel: () => updates?.cancel(),
+    );
+    return controller.stream;
   }
 
   @override

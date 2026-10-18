@@ -18,6 +18,22 @@ void main() {
     await expectation;
   });
 
+  test('구독 직후 바로 보낸 메시지도 빠지지 않음', () async {
+    final repository = FakeChatRepository(now: () => now);
+    final received = <String>[];
+
+    final subscription = repository
+        .watchMessages('dorm')
+        .listen(
+          (messages) => received.add(messages.map((m) => m.text).join(',')),
+        );
+    await repository.sendMessage(roomId: 'dorm', text: '첫 메시지');
+    await Future<void>.delayed(Duration.zero);
+    await subscription.cancel();
+
+    expect(received.last, '첫 메시지');
+  });
+
   test('읽음 처리하면 안 읽은 수가 0', () async {
     final repository = FakeChatRepository(now: () => now);
 
