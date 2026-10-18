@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../theme/ide_colors.dart';
+import '../theme/ide_theme.dart';
+
 final screenCovered = ValueNotifier<bool>(false);
 
 final coverHotKeyRegistered = ValueNotifier<bool?>(null);
@@ -28,21 +31,14 @@ class NoteRepository(
 
   @override
   Widget build(BuildContext context) {
-    return const ColoredBox(
-      color: Color(0xFF1E1F22),
+    final colors = IdeColors.of(context);
+    return ColoredBox(
+      color: colors.editorBackground,
       child: Padding(
-        padding: EdgeInsets.all(24),
+        padding: const EdgeInsets.all(24),
         child: Align(
           alignment: Alignment.topLeft,
-          child: Text(
-            _code,
-            style: TextStyle(
-              color: Color(0xFFDFE1E5),
-              fontFamily: 'Menlo',
-              fontSize: 14,
-              height: 24 / 14,
-            ),
-          ),
+          child: Text(_code, style: IdeTheme.code(colors)),
         ),
       ),
     );

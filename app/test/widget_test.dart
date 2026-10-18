@@ -1,51 +1,54 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:hush/main.dart';
 import 'package:hush/core/platform/screen_cover.dart';
+import 'package:hush/features/chat/data/fake_chat_repository.dart';
+import 'package:hush/main.dart';
 
 void main() {
-  TestWidgetsFlutterBinding.ensureInitialized();
+  Future<void> pumpApp(WidgetTester tester) async {
+    tester.view.physicalSize = const Size(1400, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
 
-  const channel = MethodChannel('capture_guard');
-  final calls = <MethodCall>[];
+    await tester.pumpWidget(
+      HushApp(
+        repository: FakeChatRepository(now: () => DateTime(2026, 10, 14, 15)),
+      ),
+    );
+    await tester.pumpAndSettle();
+  }
 
-  setUp(() {
-    calls.clear();
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(channel, (call) async {
-          calls.add(call);
-          return null;
-        });
+  testWidgets('첫 방의 대화를 코드 형식으로 보여 줌', (tester) async {
+    await pumpApp(tester);
+
+    expect(find.text('수행평가조.kt'), findsWidgets);
+    expect(
+      find.textContaining('val 수행평가조 = chat {', findRichText: true),
+      findsOneWidget,
+    );
   });
 
-  tearDown(() {
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(channel, null);
-  });
+  testWidgets('메시지를 입력하고 엔터를 누르면 대화에 추가됨', (tester) async {
+    await pumpApp(tester);
 
-  testWidgets('스위치를 켜면 캡처 제외를 요청한다', (tester) async {
-    await tester.pumpWidget(const HushApp());
-    expect(find.text('캡처 숨기기 OFF'), findsOneWidget);
-
-    await tester.tap(find.byType(Switch));
+    await tester.enterText(find.byType(TextField), '9시 반 ㄱㄱ');
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
     await tester.pumpAndSettle();
 
-    expect(find.text('캡처 숨기기 ON'), findsOneWidget);
-    expect(calls, hasLength(1));
-    expect(calls.single.method, 'setEnabled');
-    expect(calls.single.arguments, isTrue);
+    expect(
+      find.textContaining('"9시 반 ㄱㄱ"', findRichText: true),
+      findsOneWidget,
+    );
   });
 
-  testWidgets('화면 가리기를 켜면 코드 화면으로 바뀐다', (tester) async {
+  testWidgets('화면 가리기를 켜면 코드 화면으로 바뀜', (tester) async {
     addTearDown(() => screenCovered.value = false);
-    await tester.pumpWidget(const HushApp());
+    await pumpApp(tester);
 
     screenCovered.value = true;
     await tester.pump();
 
     expect(find.byType(ScreenCover), findsOneWidget);
-    expect(find.text('캡처 숨기기 OFF'), findsNothing);
   });
 }
