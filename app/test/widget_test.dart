@@ -42,6 +42,24 @@ void main() {
     );
   });
 
+  testWidgets('한글 조합 중에 누른 엔터로는 보내지 않음', (tester) async {
+    await pumpApp(tester);
+
+    await tester.showKeyboard(find.byType(TextField));
+    tester.testTextInput.updateEditingValue(
+      const TextEditingValue(
+        text: '안녕',
+        selection: TextSelection.collapsed(offset: 2),
+        composing: TextRange(start: 1, end: 2),
+      ),
+    );
+    await tester.pump();
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.pump(const Duration(milliseconds: 100));
+
+    expect(find.textContaining('"안녕"', findRichText: true), findsNothing);
+  });
+
   testWidgets('화면 가리기를 켜면 코드 화면으로 바뀜', (tester) async {
     addTearDown(() => screenCovered.value = false);
     await pumpApp(tester);

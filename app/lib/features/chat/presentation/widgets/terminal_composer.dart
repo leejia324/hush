@@ -60,6 +60,10 @@ class _TerminalComposerState extends State<TerminalComposer> {
     final keyboard = HardwareKeyboard.instance;
     if (event.logicalKey == LogicalKeyboardKey.enter &&
         !keyboard.isShiftPressed) {
+      if (_controller.value.composing.isValid &&
+          !_controller.value.composing.isCollapsed) {
+        return KeyEventResult.ignored;
+      }
       _send();
       return KeyEventResult.handled;
     }
