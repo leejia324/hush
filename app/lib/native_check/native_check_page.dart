@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 
-import '../capture_guard/capture_guard.dart';
-import 'screen_cover.dart';
+import '../core/platform/capture_guard.dart';
+import '../core/platform/screen_cover.dart';
 
 class NativeCheckPage extends StatefulWidget {
   const NativeCheckPage({super.key, this.guard = const CaptureGuard()});

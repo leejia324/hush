@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:hush/main.dart';
-import 'package:hush/native_check/screen_cover.dart';
+import 'package:hush/core/platform/screen_cover.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

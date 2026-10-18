@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:window_manager/window_manager.dart';
 
-import 'native_check/app_shell.dart';
+import 'core/platform/app_shell.dart';
 import 'native_check/native_check_page.dart';
 
 Future<void> main() async {
