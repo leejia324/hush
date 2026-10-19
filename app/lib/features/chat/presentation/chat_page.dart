@@ -133,15 +133,13 @@ class _IdeLayoutState extends State<_IdeLayout> {
                                     : ConversationView(lines: lines),
                               ),
                             ),
-                            TerminalComposer(
-                              onSend: context.read<ChatCubit>().send,
-                            ),
                           ],
                         ),
                       ),
                     ],
                   ),
                 ),
+                TerminalComposer(onSend: context.read<ChatCubit>().send),
                 IdeStatusBar(fileName: fileName, lineCount: lines?.length ?? 0),
               ],
             );
