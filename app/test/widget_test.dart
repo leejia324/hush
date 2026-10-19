@@ -169,19 +169,41 @@ void main() {
     });
   }
 
-  testWidgets('설정 창에서 테마를 바꾸면 바로 적용되고 저장됨', (tester) async {
+  testWidgets('설정 창에서 테마를 고르고 확인을 누르면 적용되고 저장됨', (tester) async {
     await pumpApp(tester);
 
     await tester.tap(find.byTooltip('설정'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('시스템 설정 따름'));
+    await tester.tap(find.text('OS와 동기화'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('라이트').last);
+    await tester.tap(find.text('라이트'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('다크').last);
+    await tester.pumpAndSettle();
+
+    expect(settings.saved, ThemePreference.system);
+
+    await tester.tap(find.text('확인'));
     await tester.pumpAndSettle();
 
     final app = tester.widget<MaterialApp>(find.byType(MaterialApp));
-    expect(app.themeMode, ThemeMode.light);
-    expect(settings.saved, ThemePreference.light);
+    expect(app.themeMode, ThemeMode.dark);
+    expect(settings.saved, ThemePreference.dark);
+  });
+
+  testWidgets('설정 창에서 취소하면 바뀌지 않음', (tester) async {
+    await pumpApp(tester);
+
+    await tester.tap(find.byTooltip('설정'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('OS와 동기화'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('취소'));
+    await tester.pumpAndSettle();
+
+    final app = tester.widget<MaterialApp>(find.byType(MaterialApp));
+    expect(app.themeMode, ThemeMode.system);
+    expect(settings.saved, ThemePreference.system);
   });
 
   testWidgets('화면 가리기를 켜면 코드 화면으로 바뀜', (tester) async {
