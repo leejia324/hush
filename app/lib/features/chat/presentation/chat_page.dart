@@ -47,6 +47,7 @@ class _IdeLayoutState extends State<_IdeLayout> {
   static const _closePanelWidth = 120.0;
 
   bool _projectPanelOpen = true;
+  final _openTabs = <String>[];
   double _terminalHeight = 240;
   double _projectPanelWidth = 260;
   double _dragWidth = 260;
@@ -65,6 +66,19 @@ class _IdeLayoutState extends State<_IdeLayout> {
     setState(() {
       _terminalHeight = (_terminalHeight - delta).clamp(120.0, 600.0);
     });
+  }
+
+  void _openTab(String? roomId) {
+    if (roomId == null || _openTabs.contains(roomId)) return;
+    setState(() => _openTabs.add(roomId));
+  }
+
+  void _closeTab(String roomId, ChatState state) {
+    if (_openTabs.length <= 1) return;
+    setState(() => _openTabs.remove(roomId));
+    if (state.selectedRoomId == roomId) {
+      context.read<ChatCubit>().selectRoom(_openTabs.last);
+    }
   }
 
   void _finishResize() {
@@ -87,7 +101,10 @@ class _IdeLayoutState extends State<_IdeLayout> {
             _toggleProjectPanel,
       },
       child: Scaffold(
-        body: BlocBuilder<ChatCubit, ChatState>(
+        body: BlocConsumer<ChatCubit, ChatState>(
+          listenWhen: (previous, current) =>
+              previous.selectedRoomId != current.selectedRoomId,
+          listener: (context, state) => _openTab(state.selectedRoomId),
           builder: (context, state) {
             final room = state.selectedRoom;
             final fileName = room == null ? null : '${room.name}.kt';
@@ -127,7 +144,19 @@ class _IdeLayoutState extends State<_IdeLayout> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            EditorTabBar(fileName: fileName),
+                            EditorTabBar(
+                              tabs: [
+                                for (final room in state.rooms)
+                                  if (_openTabs.contains(room.id))
+                                    EditorTab(
+                                      id: room.id,
+                                      fileName: '${room.name}.kt',
+                                    ),
+                              ],
+                              activeId: state.selectedRoomId,
+                              onSelect: context.read<ChatCubit>().selectRoom,
+                              onClose: (id) => _closeTab(id, state),
+                            ),
                             Expanded(
                               child: ColoredBox(
                                 color: colors.editorBackground,
@@ -137,7 +166,23 @@ class _IdeLayoutState extends State<_IdeLayout> {
                                       )
                                     : lines == null
                                     ? const SizedBox.shrink()
-                                    : ConversationView(lines: lines),
+                                    : Stack(
+                                        children: [
+                                          ConversationView(lines: lines),
+                                          Positioned(
+                                            top: 8,
+                                            right: 20,
+                                            child: Tooltip(
+                                              message: '문제 없음',
+                                              child: Icon(
+                                                Icons.check,
+                                                size: 15,
+                                                color: colors.string,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                               ),
                             ),
                           ],

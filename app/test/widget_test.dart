@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hush/core/platform/screen_cover.dart';
 import 'package:hush/features/chat/data/fake_chat_repository.dart';
+import 'package:hush/features/chat/presentation/widgets/editor_tab_bar.dart';
 import 'package:hush/features/chat/presentation/widgets/panel_resize_handle.dart';
 import 'package:hush/features/chat/presentation/widgets/project_panel.dart';
 import 'package:hush/features/chat/presentation/widgets/terminal_composer.dart';
@@ -107,6 +108,36 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(tester.getSize(terminal).height, greaterThan(before));
+  });
+
+  testWidgets('다른 방을 열면 편집기 탭이 쌓이고 닫을 수 있음', (tester) async {
+    await pumpApp(tester);
+
+    await tester.tap(find.text('동아리방.kt').first);
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 50)),
+    );
+    await tester.pumpAndSettle();
+
+    final tabs = find.byType(EditorTabBar);
+    expect(
+      find.descendant(of: tabs, matching: find.text('수행평가조.kt')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: tabs, matching: find.text('동아리방.kt')),
+      findsOneWidget,
+    );
+
+    await tester.tap(
+      find.descendant(of: tabs, matching: find.byIcon(Icons.close)).last,
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.descendant(of: tabs, matching: find.text('동아리방.kt')),
+      findsNothing,
+    );
   });
 
   testWidgets('화면 가리기를 켜면 코드 화면으로 바뀜', (tester) async {

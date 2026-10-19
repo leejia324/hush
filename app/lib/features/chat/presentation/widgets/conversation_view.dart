@@ -143,7 +143,13 @@ class _CodeLineRow extends StatelessWidget {
               style: base.copyWith(color: colors.lineNumber),
             ),
           ),
-          const SizedBox(width: 8),
+          SizedBox(
+            width: 24,
+            height: IdeTheme.lineHeight,
+            child: line.runnable
+                ? Icon(Icons.play_arrow, size: 15, color: colors.string)
+                : null,
+          ),
           Container(
             width: 3,
             height: IdeTheme.lineHeight,
@@ -151,17 +157,34 @@ class _CodeLineRow extends StatelessWidget {
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: Text.rich(
-              TextSpan(
-                children: [
-                  for (final token in line.tokens) _span(token, base, colors),
-                ],
+            child: CustomPaint(
+              painter: _IndentGuidePainter(
+                indent: line.indent,
+                spaceWidth: _spaceWidth(base),
+                color: colors.lineNumber.withValues(alpha: 0.35),
+              ),
+              child: Text.rich(
+                TextSpan(
+                  children: [
+                    for (final token in line.tokens) _span(token, base, colors),
+                  ],
+                ),
               ),
             ),
           ),
         ],
       ),
     );
+  }
+
+  static double _spaceWidth(TextStyle style) {
+    final painter = TextPainter(
+      text: TextSpan(text: ' ', style: style),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    final width = painter.width;
+    painter.dispose();
+    return width;
   }
 
   InlineSpan _span(CodeToken token, TextStyle base, IdeColors colors) {
@@ -203,4 +226,35 @@ class _CodeLineRow extends StatelessWidget {
       CodeTokenKind.todo => colors.todo,
     };
   }
+}
+
+class _IndentGuidePainter extends CustomPainter {
+  _IndentGuidePainter({
+    required this.indent,
+    required this.spaceWidth,
+    required this.color,
+  });
+
+  static const _step = 4;
+
+  final int indent;
+  final double spaceWidth;
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 1;
+    for (var level = 0; level < indent ~/ _step; level++) {
+      final x = level * _step * spaceWidth + 0.5;
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_IndentGuidePainter oldDelegate) =>
+      oldDelegate.indent != indent ||
+      oldDelegate.spaceWidth != spaceWidth ||
+      oldDelegate.color != color;
 }

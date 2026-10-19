@@ -34,7 +34,7 @@ abstract final class ConversationCode {
         CodeToken(' $roomName = ', CodeTokenKind.plain),
         const CodeToken('chat', CodeTokenKind.function),
         const CodeToken('(', CodeTokenKind.plain),
-      ]),
+      ], runnable: true),
       CodeLine([
         const CodeToken('${_indent}members = ', CodeTokenKind.plain),
         const CodeToken('listOf', CodeTokenKind.function),

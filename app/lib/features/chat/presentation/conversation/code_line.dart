@@ -28,13 +28,28 @@ class CodeToken {
 }
 
 class CodeLine {
-  const CodeLine(this.tokens, {this.messageId, this.changed = false});
+  const CodeLine(
+    this.tokens, {
+    this.messageId,
+    this.changed = false,
+    this.runnable = false,
+  });
 
   static const blank = CodeLine([]);
 
   final List<CodeToken> tokens;
   final String? messageId;
   final bool changed;
+  final bool runnable;
+
+  int get indent {
+    final text = this.text;
+    var count = 0;
+    while (count < text.length && text[count] == ' ') {
+      count++;
+    }
+    return count == text.length ? 0 : count;
+  }
 
   String get text => tokens.map((token) => token.text).join();
 }
