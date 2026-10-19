@@ -37,7 +37,7 @@ void main() {
 
     expect(find.text('수행평가조.kt'), findsWidgets);
     expect(
-      find.textContaining('val 수행평가조 = chat(', findRichText: true),
+      find.textContaining('디코에서 리허설', findRichText: true),
       findsOneWidget,
     );
   });
