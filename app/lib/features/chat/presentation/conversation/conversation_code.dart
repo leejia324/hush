@@ -42,7 +42,7 @@ abstract final class ConversationCode {
       final item = items[i];
       switch (item) {
         case _DayItem(:final day):
-          lines.add(_comment('region ${_dayLabel(day)}', changed: changed));
+          lines.add(_comment(_dayLabel(day), changed: changed));
         case _MarkerItem():
           lines.add(
             const CodeLine([
