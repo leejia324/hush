@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/ide_colors.dart';
 import '../../../../core/theme/ide_theme.dart';
+import 'file_tree_icon.dart';
 
 class IdeToolbar extends StatelessWidget {
   const IdeToolbar({super.key, required this.onCover});
@@ -14,8 +15,8 @@ class IdeToolbar extends StatelessWidget {
     final label = IdeTheme.ui(colors).copyWith(fontSize: 13, height: 1);
 
     return Container(
-      height: 40,
-      padding: const EdgeInsets.only(left: 80, right: 8),
+      height: 44,
+      padding: const EdgeInsets.only(left: 84, right: 8),
       decoration: BoxDecoration(
         color: colors.panel,
         border: Border(
@@ -24,21 +25,60 @@ class IdeToolbar extends StatelessWidget {
       ),
       child: Row(
         children: [
+          Container(
+            width: 20,
+            height: 20,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: colors.accent,
+              borderRadius: BorderRadius.circular(5),
+            ),
+            child: const Text(
+              'S',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 11,
+                height: 1,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
           Text(
-            'study-notes ▾',
+            'study-notes',
             style: label.copyWith(fontWeight: FontWeight.w600),
           ),
+          Icon(Icons.expand_more, size: 16, color: colors.comment),
           const SizedBox(width: 16),
           Icon(Icons.call_split, size: 15, color: colors.comment),
-          const SizedBox(width: 4),
-          Text('main ▾', style: label),
+          const SizedBox(width: 6),
+          Text('main', style: label),
+          Icon(Icons.expand_more, size: 16, color: colors.comment),
           const Spacer(),
-          Text('NotesApp ▾', style: label),
+          Icon(Icons.laptop_mac, size: 15, color: colors.comment),
+          const SizedBox(width: 6),
+          Text('macOS (desktop)', style: label),
+          Icon(Icons.expand_more, size: 16, color: colors.comment),
+          const SizedBox(width: 12),
+          const FileTreeIcon(FileTreeIconType.kotlin),
+          const SizedBox(width: 6),
+          Text('NotesApp.kt', style: label),
+          Icon(Icons.expand_more, size: 16, color: colors.comment),
+          const SizedBox(width: 10),
+          Container(
+            width: 26,
+            height: 26,
+            decoration: BoxDecoration(
+              color: colors.string.withValues(alpha: 0.9),
+              borderRadius: BorderRadius.circular(5),
+            ),
+            child: const Icon(Icons.play_arrow, size: 18, color: Colors.white),
+          ),
           const SizedBox(width: 8),
-          Icon(Icons.play_arrow, size: 18, color: colors.string),
+          Icon(Icons.bug_report_outlined, size: 17, color: colors.comment),
           const SizedBox(width: 4),
-          Icon(Icons.bug_report_outlined, size: 16, color: colors.comment),
-          const SizedBox(width: 16),
+          Icon(Icons.more_vert, size: 17, color: colors.comment),
+          const SizedBox(width: 12),
           _ToolbarButton(icon: Icons.link, tooltip: '초대 링크', onPressed: () {}),
           _ToolbarButton(
             icon: Icons.delete_outline,
@@ -50,6 +90,7 @@ class IdeToolbar extends StatelessWidget {
             tooltip: '화면 가리기 ⌥Space',
             onPressed: onCover,
           ),
+          _ToolbarButton(icon: Icons.search, tooltip: '검색', onPressed: () {}),
           _ToolbarButton(
             icon: Icons.settings_outlined,
             tooltip: '설정',

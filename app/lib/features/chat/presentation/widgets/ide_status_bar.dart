@@ -37,6 +37,8 @@ class IdeStatusBar extends StatelessWidget {
       ),
       child: Row(
         children: [
+          Icon(Icons.crop_square, size: 12, color: colors.accent),
+          const SizedBox(width: 6),
           Expanded(
             child: Text(path, style: style, overflow: TextOverflow.ellipsis),
           ),
@@ -46,7 +48,7 @@ class IdeStatusBar extends StatelessWidget {
           const SizedBox(width: 16),
           Text('UTF-8', style: style),
           const SizedBox(width: 16),
-          Text('4 spaces', style: style),
+          Text('4개 공백', style: style),
           const SizedBox(width: 16),
           Tooltip(
             message: '모든 메시지는 보낸 지 24시간 뒤 사라짐',

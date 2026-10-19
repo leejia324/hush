@@ -128,77 +128,102 @@ class _IdeLayoutState extends State<_IdeLayout> {
                         projectPanelOpen: _projectPanelOpen,
                         onToggleProjectPanel: _toggleProjectPanel,
                       ),
-                      if (_projectPanelOpen) ...[
-                        ProjectPanel(
-                          rooms: state.rooms,
-                          selectedRoomId: state.selectedRoomId,
-                          onSelect: context.read<ChatCubit>().selectRoom,
-                          width: _projectPanelWidth,
-                        ),
-                        PanelResizeHandle(
-                          onDrag: _resizeProjectPanel,
-                          onDragEnd: _finishResize,
-                        ),
-                      ],
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            EditorTabBar(
-                              tabs: [
-                                for (final room in state.rooms)
-                                  if (_openTabs.contains(room.id))
-                                    EditorTab(
-                                      id: room.id,
-                                      fileName: '${room.name}.kt',
-                                    ),
-                              ],
-                              activeId: state.selectedRoomId,
-                              onSelect: context.read<ChatCubit>().selectRoom,
-                              onClose: (id) => _closeTab(id, state),
-                            ),
                             Expanded(
-                              child: ColoredBox(
-                                color: colors.editorBackground,
-                                child: state.failed
-                                    ? _LoadFailed(
-                                        onRetry: context.read<ChatCubit>().load,
-                                      )
-                                    : lines == null
-                                    ? const SizedBox.shrink()
-                                    : Stack(
-                                        children: [
-                                          ConversationView(lines: lines),
-                                          Positioned(
-                                            top: 8,
-                                            right: 20,
-                                            child: Tooltip(
-                                              message: '문제 없음',
-                                              child: Icon(
-                                                Icons.check,
-                                                size: 15,
-                                                color: colors.string,
-                                              ),
-                                            ),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  if (_projectPanelOpen) ...[
+                                    ProjectPanel(
+                                      rooms: state.rooms,
+                                      selectedRoomId: state.selectedRoomId,
+                                      onSelect: context
+                                          .read<ChatCubit>()
+                                          .selectRoom,
+                                      width: _projectPanelWidth,
+                                    ),
+                                    PanelResizeHandle(
+                                      onDrag: _resizeProjectPanel,
+                                      onDragEnd: _finishResize,
+                                    ),
+                                  ],
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.stretch,
+                                      children: [
+                                        EditorTabBar(
+                                          tabs: [
+                                            for (final room in state.rooms)
+                                              if (_openTabs.contains(room.id))
+                                                EditorTab(
+                                                  id: room.id,
+                                                  fileName: '${room.name}.kt',
+                                                ),
+                                          ],
+                                          activeId: state.selectedRoomId,
+                                          onSelect: context
+                                              .read<ChatCubit>()
+                                              .selectRoom,
+                                          onClose: (id) => _closeTab(id, state),
+                                        ),
+                                        Expanded(
+                                          child: ColoredBox(
+                                            color: colors.editorBackground,
+                                            child: state.failed
+                                                ? _LoadFailed(
+                                                    onRetry: context
+                                                        .read<ChatCubit>()
+                                                        .load,
+                                                  )
+                                                : lines == null
+                                                ? const SizedBox.shrink()
+                                                : Stack(
+                                                    children: [
+                                                      ConversationView(
+                                                        lines: lines,
+                                                      ),
+                                                      Positioned(
+                                                        top: 8,
+                                                        right: 20,
+                                                        child: Tooltip(
+                                                          message: '문제 없음',
+                                                          child: Icon(
+                                                            Icons.check,
+                                                            size: 15,
+                                                            color:
+                                                                colors.string,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
                                           ),
-                                        ],
-                                      ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ),
+                            ),
+                            PanelResizeHandle(
+                              axis: Axis.vertical,
+                              onDrag: _resizeTerminal,
+                              onDragEnd: () {},
+                            ),
+                            TerminalComposer(
+                              onSend: context.read<ChatCubit>().send,
+                              height: _terminalHeight,
                             ),
                           ],
                         ),
                       ),
+                      const _RightToolStrip(),
                     ],
                   ),
-                ),
-                PanelResizeHandle(
-                  axis: Axis.vertical,
-                  onDrag: _resizeTerminal,
-                  onDragEnd: () {},
-                ),
-                TerminalComposer(
-                  onSend: context.read<ChatCubit>().send,
-                  height: _terminalHeight,
                 ),
                 IdeStatusBar(fileName: fileName, lineCount: lines?.length ?? 0),
               ],
@@ -223,7 +248,7 @@ class _ToolStrip extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = IdeColors.of(context);
     return Container(
-      width: 40,
+      width: 44,
       decoration: BoxDecoration(
         color: colors.panel,
         border: Border(
@@ -232,15 +257,93 @@ class _ToolStrip extends StatelessWidget {
       ),
       child: Column(
         children: [
-          const SizedBox(height: 4),
-          IconButton(
-            onPressed: onToggleProjectPanel,
-            tooltip: 'Project ⌘1',
-            iconSize: 18,
-            color: projectPanelOpen ? colors.accent : colors.comment,
-            icon: const Icon(Icons.folder_outlined),
+          const SizedBox(height: 6),
+          _StripButton(
+            icon: Icons.folder_outlined,
+            tooltip: '프로젝트 ⌘1',
+            active: projectPanelOpen,
+            onTap: onToggleProjectPanel,
           ),
+          const _StripButton(icon: Icons.commit, tooltip: '커밋'),
+          const _StripButton(icon: Icons.account_tree_outlined, tooltip: 'Git'),
+          const _StripButton(icon: Icons.view_list_outlined, tooltip: '구조'),
+          const _StripButton(icon: Icons.more_horiz, tooltip: '더 보기'),
+          const Spacer(),
+          const _StripButton(icon: Icons.play_circle_outline, tooltip: '실행'),
+          const _StripButton(
+            icon: Icons.terminal,
+            tooltip: '터미널',
+            active: true,
+          ),
+          const _StripButton(icon: Icons.error_outline, tooltip: '문제'),
+          const _StripButton(icon: Icons.call_split, tooltip: '버전 관리'),
+          const SizedBox(height: 6),
         ],
+      ),
+    );
+  }
+}
+
+class _RightToolStrip extends StatelessWidget {
+  const _RightToolStrip();
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = IdeColors.of(context);
+    return Container(
+      width: 44,
+      decoration: BoxDecoration(
+        color: colors.panel,
+        border: Border(left: BorderSide(color: Theme.of(context).dividerColor)),
+      ),
+      child: const Column(
+        children: [
+          SizedBox(height: 6),
+          _StripButton(icon: Icons.notifications_none, tooltip: '알림'),
+          _StripButton(icon: Icons.people_outline, tooltip: '멤버 ⌘2'),
+          _StripButton(icon: Icons.storage_outlined, tooltip: '데이터베이스'),
+          _StripButton(icon: Icons.auto_awesome_outlined, tooltip: 'AI 도우미'),
+        ],
+      ),
+    );
+  }
+}
+
+class _StripButton extends StatelessWidget {
+  const _StripButton({
+    required this.icon,
+    required this.tooltip,
+    this.active = false,
+    this.onTap,
+  });
+
+  final IconData icon;
+  final String tooltip;
+  final bool active;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = IdeColors.of(context);
+    return Tooltip(
+      message: tooltip,
+      child: InkWell(
+        onTap: onTap ?? () {},
+        borderRadius: BorderRadius.circular(6),
+        child: Container(
+          width: 32,
+          height: 32,
+          margin: const EdgeInsets.symmetric(vertical: 2),
+          decoration: BoxDecoration(
+            color: active ? colors.accent.withValues(alpha: 0.25) : null,
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Icon(
+            icon,
+            size: 18,
+            color: active ? colors.text : colors.comment,
+          ),
+        ),
       ),
     );
   }
