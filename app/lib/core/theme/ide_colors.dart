@@ -18,6 +18,7 @@ class IdeColors extends ThemeExtension<IdeColors> {
     required this.selection,
     required this.revealedSecret,
     required this.accent,
+    required this.unread,
     required this.people,
   });
 
@@ -37,6 +38,7 @@ class IdeColors extends ThemeExtension<IdeColors> {
     selection: Color(0xFF2E436E),
     revealedSecret: Color(0xFF4A4426),
     accent: Color(0xFF3574F0),
+    unread: Color(0xFF70AEFF),
     people: [
       Color(0xFF7FB1F7),
       Color(0xFFE0A46E),
@@ -61,6 +63,7 @@ class IdeColors extends ThemeExtension<IdeColors> {
     selection: Color(0xFFD5E1FF),
     revealedSecret: Color(0xFFFFF0A8),
     accent: Color(0xFF3574F0),
+    unread: Color(0xFF2763D6),
     people: [
       Color(0xFF2763D6),
       Color(0xFFB05A12),
@@ -84,6 +87,7 @@ class IdeColors extends ThemeExtension<IdeColors> {
   final Color selection;
   final Color revealedSecret;
   final Color accent;
+  final Color unread;
   final List<Color> people;
 
   Color person(int colorIndex) => people[colorIndex % people.length];
@@ -108,6 +112,7 @@ class IdeColors extends ThemeExtension<IdeColors> {
     Color? selection,
     Color? revealedSecret,
     Color? accent,
+    Color? unread,
     List<Color>? people,
   }) {
     return IdeColors(
@@ -126,6 +131,7 @@ class IdeColors extends ThemeExtension<IdeColors> {
       selection: selection ?? this.selection,
       revealedSecret: revealedSecret ?? this.revealedSecret,
       accent: accent ?? this.accent,
+      unread: unread ?? this.unread,
       people: people ?? this.people,
     );
   }
@@ -153,6 +159,7 @@ class IdeColors extends ThemeExtension<IdeColors> {
       selection: Color.lerp(selection, other.selection, t)!,
       revealedSecret: Color.lerp(revealedSecret, other.revealedSecret, t)!,
       accent: Color.lerp(accent, other.accent, t)!,
+      unread: Color.lerp(unread, other.unread, t)!,
       people: [
         for (var i = 0; i < people.length; i++)
           Color.lerp(people[i], other.person(i), t)!,

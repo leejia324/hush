@@ -234,7 +234,7 @@ class _RoomRow extends StatelessWidget {
     final style = IdeTheme.ui(colors).copyWith(
       fontSize: 13,
       height: 1,
-      color: unread ? colors.accent : colors.text,
+      color: unread ? colors.unread : colors.text,
       fontWeight: unread ? FontWeight.w600 : null,
     );
 
