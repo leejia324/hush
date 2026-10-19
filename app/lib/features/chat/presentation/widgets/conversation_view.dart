@@ -163,11 +163,15 @@ class _CodeLineRow extends StatelessWidget {
                 spaceWidth: _spaceWidth(base),
                 color: colors.lineNumber.withValues(alpha: 0.35),
               ),
-              child: Text.rich(
-                TextSpan(
-                  children: [
-                    for (final token in line.tokens) _span(token, base, colors),
-                  ],
+              child: Padding(
+                padding: EdgeInsets.only(left: line.indent * _spaceWidth(base)),
+                child: Text.rich(
+                  TextSpan(
+                    children: [
+                      for (final token in _withoutIndent(line))
+                        _span(token, base, colors),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -175,6 +179,28 @@ class _CodeLineRow extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  static Iterable<CodeToken> _withoutIndent(CodeLine line) sync* {
+    var remaining = line.indent;
+    for (final token in line.tokens) {
+      if (remaining == 0) {
+        yield token;
+        continue;
+      }
+      final skip = remaining.clamp(0, token.text.length);
+      remaining -= skip;
+      if (skip < token.text.length) {
+        yield CodeToken(
+          token.text.substring(skip),
+          token.kind,
+          secret: token.secret,
+          bold: token.bold,
+          italic: token.italic,
+          strike: token.strike,
+        );
+      }
+    }
   }
 
   static double _spaceWidth(TextStyle style) {
