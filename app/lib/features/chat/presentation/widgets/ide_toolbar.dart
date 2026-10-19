@@ -11,7 +11,7 @@ class IdeToolbar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = IdeColors.of(context);
-    final label = IdeTheme.code(colors).copyWith(fontSize: 13, height: 1);
+    final label = IdeTheme.ui(colors).copyWith(fontSize: 13, height: 1);
 
     return Container(
       height: 40,

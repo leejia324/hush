@@ -84,7 +84,7 @@ class _TerminalComposerState extends State<TerminalComposer> {
   @override
   Widget build(BuildContext context) {
     final colors = IdeColors.of(context);
-    final code = IdeTheme.code(colors);
+    final code = IdeTheme.editor(colors);
 
     return Container(
       decoration: BoxDecoration(
@@ -203,7 +203,7 @@ class _FormatButton extends StatelessWidget {
           alignment: Alignment.center,
           child: Text(
             label,
-            style: IdeTheme.code(colors)
+            style: IdeTheme.ui(colors)
                 .copyWith(color: colors.comment, fontSize: 12, height: 1),
           ),
         ),

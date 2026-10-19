@@ -36,7 +36,7 @@ class EditorTabBar extends StatelessWidget {
                 children: [
                   Text(
                     fileName!,
-                    style: IdeTheme.code(colors)
+                    style: IdeTheme.ui(colors)
                         .copyWith(fontSize: 13, height: 1),
                   ),
                   const SizedBox(width: 8),

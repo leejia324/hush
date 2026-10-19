@@ -202,7 +202,7 @@ class _LoadFailed extends StatelessWidget {
         children: [
           Text(
             '// 채팅방을 불러오지 못함',
-            style: IdeTheme.code(colors).copyWith(color: colors.comment),
+            style: IdeTheme.editor(colors).copyWith(color: colors.comment),
           ),
           const SizedBox(height: 8),
           TextButton(onPressed: onRetry, child: const Text('다시 불러오기')),

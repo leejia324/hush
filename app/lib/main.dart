@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -12,8 +14,14 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await windowManager.ensureInitialized();
   await AppShell().start();
+  LicenseRegistry.addLicense(_fontLicenses);
 
   runApp(HushApp(repository: FakeChatRepository()));
+}
+
+Stream<LicenseEntry> _fontLicenses() async* {
+  final license = await rootBundle.loadString('assets/fonts/d2coding/OFL.txt');
+  yield LicenseEntryWithLineBreaks(const ['D2Coding'], license);
 }
 
 class HushApp extends StatelessWidget {

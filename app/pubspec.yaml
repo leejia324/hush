@@ -29,3 +29,12 @@ flutter:
   config:
     enable-swift-package-manager: true
 
+  assets:
+    - assets/fonts/d2coding/OFL.txt
+
+  fonts:
+    - family: D2Coding
+      fonts:
+        - asset: assets/fonts/d2coding/D2Coding-Ver1.4.0-20261003.ttf
+        - asset: assets/fonts/d2coding/D2CodingBold-Ver1.4.0-20261003.ttf
+          weight: 700

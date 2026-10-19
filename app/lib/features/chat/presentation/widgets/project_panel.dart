@@ -21,7 +21,7 @@ class ProjectPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = IdeColors.of(context);
-    final code = IdeTheme.code(colors).copyWith(fontSize: 13);
+    final code = IdeTheme.ui(colors).copyWith(fontSize: 13);
 
     return Container(
       width: width,
@@ -142,7 +142,7 @@ class _TreeRow extends StatelessWidget {
               label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: IdeTheme.code(colors).copyWith(fontSize: 13, height: 1),
+              style: IdeTheme.ui(colors).copyWith(fontSize: 13, height: 1),
             ),
           ),
         ],
@@ -166,7 +166,7 @@ class _RoomRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = IdeColors.of(context);
     final unread = room.unreadCount > 0;
-    final style = IdeTheme.code(colors).copyWith(
+    final style = IdeTheme.ui(colors).copyWith(
       fontSize: 13,
       height: 1,
       color: unread ? colors.accent : colors.text,

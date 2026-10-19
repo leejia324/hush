@@ -128,7 +128,7 @@ class _CodeLineRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = IdeColors.of(context);
-    final base = IdeTheme.code(colors);
+    final base = IdeTheme.editor(colors);
 
     return SizedBox(
       height: IdeTheme.lineHeight,

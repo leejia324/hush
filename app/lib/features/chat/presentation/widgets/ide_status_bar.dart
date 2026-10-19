@@ -16,7 +16,7 @@ class IdeStatusBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = IdeColors.of(context);
-    final style = IdeTheme.code(colors)
+    final style = IdeTheme.ui(colors)
         .copyWith(fontSize: 12, height: 1, color: colors.comment);
     final path = [
       'study-notes',

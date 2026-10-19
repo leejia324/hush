@@ -38,7 +38,7 @@ class NoteRepository(
         padding: const EdgeInsets.all(24),
         child: Align(
           alignment: Alignment.topLeft,
-          child: Text(_code, style: IdeTheme.code(colors)),
+          child: Text(_code, style: IdeTheme.editor(colors)),
         ),
       ),
     );
