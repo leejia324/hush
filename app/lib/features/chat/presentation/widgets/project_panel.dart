@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/ide_colors.dart';
 import '../../../../core/theme/ide_theme.dart';
 import '../../domain/room.dart';
+import 'file_tree_icon.dart';
 
 class ProjectPanel extends StatelessWidget {
   const ProjectPanel({
@@ -61,20 +62,24 @@ class ProjectPanel extends StatelessWidget {
               children: [
                 _TreeRow(
                   depth: 0,
-                  icon: Icons.folder_outlined,
+                  icon: FileTreeIconType.module,
                   label: 'study-notes',
                   expanded: true,
                 ),
-                _TreeRow(depth: 1, icon: Icons.folder_outlined, label: '.idea'),
                 _TreeRow(
                   depth: 1,
-                  icon: Icons.folder_outlined,
+                  icon: FileTreeIconType.configFolder,
+                  label: '.idea',
+                ),
+                _TreeRow(
+                  depth: 1,
+                  icon: FileTreeIconType.sourceFolder,
                   label: 'src/main/kotlin',
                   expanded: true,
                 ),
                 _TreeRow(
                   depth: 2,
-                  icon: Icons.folder_outlined,
+                  icon: FileTreeIconType.packageFolder,
                   label: 'notes.rooms',
                   expanded: true,
                 ),
@@ -86,12 +91,12 @@ class ProjectPanel extends StatelessWidget {
                   ),
                 _TreeRow(
                   depth: 1,
-                  icon: Icons.description_outlined,
+                  icon: FileTreeIconType.kotlinScript,
                   label: 'build.gradle.kts',
                 ),
                 _TreeRow(
                   depth: 1,
-                  icon: Icons.description_outlined,
+                  icon: FileTreeIconType.markdown,
                   label: 'README.md',
                 ),
               ],
@@ -112,7 +117,7 @@ class _TreeRow extends StatelessWidget {
   });
 
   final int depth;
-  final IconData icon;
+  final FileTreeIconType icon;
   final String label;
   final bool? expanded;
 
@@ -135,7 +140,7 @@ class _TreeRow extends StatelessWidget {
                   ),
           ),
           const SizedBox(width: 2),
-          Icon(icon, size: 15, color: colors.comment),
+          FileTreeIcon(icon),
           const SizedBox(width: 6),
           Flexible(
             child: Text(
@@ -181,19 +186,7 @@ class _RoomRow extends StatelessWidget {
         child: Row(
           children: [
             const SizedBox(width: 8 + 3 * 16.0 + 16),
-            Container(
-              width: 14,
-              height: 14,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: colors.property,
-                borderRadius: BorderRadius.circular(3),
-              ),
-              child: const Text(
-                'K',
-                style: TextStyle(fontSize: 9, color: Colors.white, height: 1),
-              ),
-            ),
+            const FileTreeIcon(FileTreeIconType.kotlin),
             const SizedBox(width: 6),
             Flexible(
               child: Text(
