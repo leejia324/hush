@@ -39,5 +39,6 @@ void main() {
 
     expect(find.text('9시 반'), findsNothing);
     expect(find.bySemanticsLabel('9시 반'), findsNothing);
+    expect(find.bySemanticsLabel('가려진 내용'), findsOneWidget);
   });
 }

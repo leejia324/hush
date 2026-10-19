@@ -31,7 +31,9 @@ class HiddenSecret extends StatelessWidget {
       style.copyWith(height: 1.2),
       MediaQuery.textScalerOf(context),
     );
-    return ExcludeSemantics(
+    return Semantics(
+      label: '가려진 내용',
+      excludeSemantics: true,
       child: Container(
         width: size.width,
         height: size.height,
