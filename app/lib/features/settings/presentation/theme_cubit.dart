@@ -14,8 +14,8 @@ class ThemeCubit extends Cubit<ThemePreference> {
 
   Future<void> select(ThemePreference theme) async {
     if (theme == state) return;
-    emit(theme);
     await _repository.saveTheme(theme);
+    if (!isClosed) emit(theme);
   }
 }
 

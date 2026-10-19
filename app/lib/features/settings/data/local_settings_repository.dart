@@ -13,11 +13,15 @@ class LocalSettingsRepository implements SettingsRepository {
 
   @override
   Future<ThemePreference> loadTheme() async {
-    final saved = await _preferences.getString(_themeKey);
-    return ThemePreference.values.firstWhere(
-      (theme) => theme.name == saved,
-      orElse: () => ThemePreference.system,
-    );
+    try {
+      final saved = await _preferences.getString(_themeKey);
+      return ThemePreference.values.firstWhere(
+        (theme) => theme.name == saved,
+        orElse: () => ThemePreference.system,
+      );
+    } catch (_) {
+      return ThemePreference.system;
+    }
   }
 
   @override
