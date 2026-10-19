@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:tray_manager/tray_manager.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -10,6 +12,7 @@ class AppShell with WindowListener {
 
   Future<void> start() async {
     await windowManager.setPreventClose(true);
+    await windowManager.setMinimumSize(const Size(800, 560));
     windowManager.addListener(this);
     _createTrayIcon();
     coverHotKeyRegistered.value = await const GlobalHotKey()
