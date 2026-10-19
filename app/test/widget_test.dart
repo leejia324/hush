@@ -36,10 +36,7 @@ void main() {
     await pumpApp(tester);
 
     expect(find.text('수행평가조.kt'), findsWidgets);
-    expect(
-      find.textContaining('디코에서 리허설', findRichText: true),
-      findsOneWidget,
-    );
+    expect(find.textContaining('디코에서 리허설', findRichText: true), findsOneWidget);
   });
 
   testWidgets('메시지를 입력하고 엔터를 누르면 대화에 추가됨', (tester) async {

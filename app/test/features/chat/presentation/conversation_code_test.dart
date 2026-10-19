@@ -99,6 +99,24 @@ void main() {
     expect(shapes.length, greaterThanOrEqualTo(4));
   });
 
+  test('한 사람이 길게 보내도 같은 모양만 반복되지 않음', () {
+    final lines = build([
+      for (var i = 0; i < 12; i++) message('m$i', 'me', '메시지 $i', at(10, i)),
+    ]);
+    final code = texts(lines).join('\n');
+
+    final shapes = [
+      RegExp(r'\.run \{'),
+      RegExp(r'val \w+ = listOf\('),
+      RegExp(r'if \(.+\.isOnline\)'),
+      RegExp(r'notes\["'),
+      RegExp(r'check\('),
+      RegExp(r'val \S+\d{4} = "'),
+    ].where((shape) => shape.hasMatch(code));
+
+    expect(shapes.length, greaterThanOrEqualTo(3));
+  });
+
   test('같은 대화는 항상 같은 코드로 바뀜', () {
     List<Message> conversation() => [
       for (var i = 0; i < 10; i++)

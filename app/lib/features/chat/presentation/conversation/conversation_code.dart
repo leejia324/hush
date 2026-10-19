@@ -430,7 +430,9 @@ abstract final class ConversationCode {
         continue;
       }
       final last = items.isEmpty ? null : items.last;
-      if (last is _Turn && last.senderId == message.senderId) {
+      if (last is _Turn &&
+          last.senderId == message.senderId &&
+          last.messages.length < _chunkSize(last.messages.first.id)) {
         last.messages.add(message);
       } else {
         items.add(_Turn(message.senderId, [message]));
@@ -539,6 +541,9 @@ abstract final class ConversationCode {
     used[base] = count;
     return count == 1 ? base : '${base}_$count';
   }
+
+  static int _chunkSize(String messageId) =>
+      1 + _stableHash('${messageId}chunk') % 3;
 
   static int _stableHash(String text) {
     var hash = 0;
