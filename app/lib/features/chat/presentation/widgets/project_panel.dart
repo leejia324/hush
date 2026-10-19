@@ -10,11 +10,13 @@ class ProjectPanel extends StatelessWidget {
     required this.rooms,
     required this.selectedRoomId,
     required this.onSelect,
+    required this.width,
   });
 
   final List<Room> rooms;
   final String? selectedRoomId;
   final ValueChanged<String> onSelect;
+  final double width;
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +24,7 @@ class ProjectPanel extends StatelessWidget {
     final code = IdeTheme.code(colors).copyWith(fontSize: 13);
 
     return Container(
-      width: 260,
+      width: width,
       decoration: BoxDecoration(
         color: colors.panel,
         border: Border(

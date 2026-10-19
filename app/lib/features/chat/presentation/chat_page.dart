@@ -13,6 +13,7 @@ import 'widgets/conversation_view.dart';
 import 'widgets/editor_tab_bar.dart';
 import 'widgets/ide_status_bar.dart';
 import 'widgets/ide_toolbar.dart';
+import 'widgets/panel_resize_handle.dart';
 import 'widgets/project_panel.dart';
 import 'widgets/terminal_composer.dart';
 
@@ -41,10 +42,33 @@ class _IdeLayout extends StatefulWidget {
 }
 
 class _IdeLayoutState extends State<_IdeLayout> {
+  static const _minPanelWidth = 180.0;
+  static const _maxPanelWidth = 480.0;
+  static const _closePanelWidth = 120.0;
+
   bool _projectPanelOpen = true;
+  double _projectPanelWidth = 260;
+  double _dragWidth = 260;
 
   void _toggleProjectPanel() =>
       setState(() => _projectPanelOpen = !_projectPanelOpen);
+
+  void _resizeProjectPanel(double delta) {
+    setState(() {
+      _dragWidth += delta;
+      _projectPanelWidth = _dragWidth.clamp(_minPanelWidth, _maxPanelWidth);
+    });
+  }
+
+  void _finishResize() {
+    setState(() {
+      if (_dragWidth < _closePanelWidth) {
+        _projectPanelOpen = false;
+        _projectPanelWidth = _minPanelWidth;
+      }
+      _dragWidth = _projectPanelWidth;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -80,12 +104,18 @@ class _IdeLayoutState extends State<_IdeLayout> {
                         projectPanelOpen: _projectPanelOpen,
                         onToggleProjectPanel: _toggleProjectPanel,
                       ),
-                      if (_projectPanelOpen)
+                      if (_projectPanelOpen) ...[
                         ProjectPanel(
                           rooms: state.rooms,
                           selectedRoomId: state.selectedRoomId,
                           onSelect: context.read<ChatCubit>().selectRoom,
+                          width: _projectPanelWidth,
                         ),
+                        PanelResizeHandle(
+                          onDrag: _resizeProjectPanel,
+                          onDragEnd: _finishResize,
+                        ),
+                      ],
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
