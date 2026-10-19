@@ -41,7 +41,7 @@ class ProjectPanel extends StatelessWidget {
               children: [
                 const SizedBox(width: 12),
                 Text(
-                  'Project ▾',
+                  '프로젝트 ▾',
                   style: code.copyWith(fontWeight: FontWeight.w600),
                 ),
                 const Spacer(),
@@ -60,24 +60,40 @@ class ProjectPanel extends StatelessWidget {
           Expanded(
             child: ListView(
               children: [
-                _TreeRow(
+                const _TreeRow(
                   depth: 0,
                   icon: FileTreeIconType.module,
                   label: 'study-notes',
+                  detail: '~/IdeaProjects/study-notes',
                   expanded: true,
+                  bold: true,
                 ),
-                _TreeRow(
+                const _TreeRow(
+                  depth: 1,
+                  icon: FileTreeIconType.configFolder,
+                  label: '.gradle',
+                  expanded: false,
+                ),
+                const _TreeRow(
                   depth: 1,
                   icon: FileTreeIconType.configFolder,
                   label: '.idea',
+                  expanded: false,
                 ),
-                _TreeRow(
+                const _TreeRow(
+                  depth: 1,
+                  icon: FileTreeIconType.excludedFolder,
+                  label: 'build',
+                  expanded: false,
+                  excluded: true,
+                ),
+                const _TreeRow(
                   depth: 1,
                   icon: FileTreeIconType.sourceFolder,
                   label: 'src/main/kotlin',
                   expanded: true,
                 ),
-                _TreeRow(
+                const _TreeRow(
                   depth: 2,
                   icon: FileTreeIconType.packageFolder,
                   label: 'notes.rooms',
@@ -89,15 +105,36 @@ class ProjectPanel extends StatelessWidget {
                     selected: room.id == selectedRoomId,
                     onTap: () => onSelect(room.id),
                   ),
-                _TreeRow(
+                const _TreeRow(
+                  depth: 1,
+                  icon: FileTreeIconType.gitignore,
+                  label: '.gitignore',
+                ),
+                const _TreeRow(
                   depth: 1,
                   icon: FileTreeIconType.kotlinScript,
                   label: 'build.gradle.kts',
                 ),
-                _TreeRow(
+                const _TreeRow(
+                  depth: 1,
+                  icon: FileTreeIconType.kotlinScript,
+                  label: 'settings.gradle.kts',
+                ),
+                const _TreeRow(
                   depth: 1,
                   icon: FileTreeIconType.markdown,
                   label: 'README.md',
+                ),
+                const _TreeRow(
+                  depth: 0,
+                  icon: FileTreeIconType.library,
+                  label: '외부 라이브러리',
+                  expanded: false,
+                ),
+                const _TreeRow(
+                  depth: 0,
+                  icon: FileTreeIconType.scratch,
+                  label: '스크래치 및 콘솔',
                 ),
               ],
             ),
@@ -113,13 +150,21 @@ class _TreeRow extends StatelessWidget {
     required this.depth,
     required this.icon,
     required this.label,
+    this.detail,
     this.expanded,
+    this.bold = false,
+    this.excluded = false,
   });
+
+  static const indent = 18.0;
 
   final int depth;
   final FileTreeIconType icon;
   final String label;
+  final String? detail;
   final bool? expanded;
+  final bool bold;
+  final bool excluded;
 
   @override
   Widget build(BuildContext context) {
@@ -128,7 +173,7 @@ class _TreeRow extends StatelessWidget {
       height: 24,
       child: Row(
         children: [
-          SizedBox(width: 8 + depth * 16.0),
+          SizedBox(width: 8 + depth * indent),
           SizedBox(
             width: 14,
             child: expanded == null
@@ -143,8 +188,23 @@ class _TreeRow extends StatelessWidget {
           FileTreeIcon(icon),
           const SizedBox(width: 6),
           Flexible(
-            child: Text(
-              label,
+            child: Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(
+                    text: label,
+                    style: TextStyle(
+                      color: excluded ? colors.keyword : colors.text,
+                      fontWeight: bold ? FontWeight.w600 : null,
+                    ),
+                  ),
+                  if (detail != null)
+                    TextSpan(
+                      text: '  $detail',
+                      style: TextStyle(color: colors.comment),
+                    ),
+                ],
+              ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: IdeTheme.ui(colors).copyWith(fontSize: 13, height: 1),
@@ -185,7 +245,7 @@ class _RoomRow extends StatelessWidget {
         color: selected ? colors.selection : null,
         child: Row(
           children: [
-            const SizedBox(width: 8 + 3 * 16.0 + 16),
+            const SizedBox(width: 8 + 3 * _TreeRow.indent + 16),
             const FileTreeIcon(FileTreeIconType.kotlin),
             const SizedBox(width: 6),
             Flexible(

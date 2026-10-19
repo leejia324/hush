@@ -8,9 +8,13 @@ enum FileTreeIconType {
   sourceFolder,
   packageFolder,
   configFolder,
+  excludedFolder,
   kotlin,
   kotlinScript,
   markdown,
+  gitignore,
+  library,
+  scratch,
 }
 
 class FileTreeIcon extends StatelessWidget {
@@ -40,14 +44,30 @@ class FileTreeIcon extends StatelessWidget {
         FileTreeIconType.sourceFolder => _Folder(color: colors.accent),
         FileTreeIconType.packageFolder => _Folder(
           color: colors.comment,
-          dot: colors.editorBackground,
+          dot: colors.comment,
         ),
         FileTreeIconType.configFolder => _Folder(
-          color: colors.comment.withValues(alpha: 0.55),
+          color: colors.comment.withValues(alpha: 0.6),
         ),
+        FileTreeIconType.excludedFolder => _Folder(color: colors.keyword),
         FileTreeIconType.kotlin || FileTreeIconType.kotlinScript =>
           const CustomPaint(painter: _KotlinMarkPainter(_kotlinGradient)),
         FileTreeIconType.markdown => _Markdown(color: colors.comment),
+        FileTreeIconType.gitignore => Icon(
+          Icons.block,
+          size: size,
+          color: colors.comment,
+        ),
+        FileTreeIconType.library => Icon(
+          Icons.view_week_outlined,
+          size: size,
+          color: colors.comment,
+        ),
+        FileTreeIconType.scratch => Icon(
+          Icons.subject,
+          size: size,
+          color: colors.comment,
+        ),
       },
     );
   }
@@ -106,34 +126,27 @@ class _FolderPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final unit = size.width / 14;
-    final fill = Paint()..color = color;
+    final stroke = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2 * unit
+      ..strokeJoin = StrokeJoin.round;
 
-    canvas.drawRRect(
-      RRect.fromLTRBR(
-        1 * unit,
-        2 * unit,
-        6.5 * unit,
-        5 * unit,
-        Radius.circular(1 * unit),
-      ),
-      fill,
-    );
-    canvas.drawRRect(
-      RRect.fromLTRBR(
-        1 * unit,
-        3.5 * unit,
-        13 * unit,
-        12 * unit,
-        Radius.circular(1.5 * unit),
-      ),
-      fill,
-    );
+    final outline = Path()
+      ..moveTo(1.5 * unit, 3 * unit)
+      ..lineTo(5.5 * unit, 3 * unit)
+      ..lineTo(7 * unit, 4.5 * unit)
+      ..lineTo(12.5 * unit, 4.5 * unit)
+      ..lineTo(12.5 * unit, 12 * unit)
+      ..lineTo(1.5 * unit, 12 * unit)
+      ..close();
+    canvas.drawPath(outline, stroke);
 
     final dot = this.dot;
     if (dot != null) {
       canvas.drawCircle(
-        Offset(7 * unit, 7.75 * unit),
-        1.6 * unit,
+        Offset(7 * unit, 8.3 * unit),
+        1.5 * unit,
         Paint()..color = dot,
       );
     }
@@ -142,10 +155,10 @@ class _FolderPainter extends CustomPainter {
     if (badge != null) {
       canvas.drawRRect(
         RRect.fromLTRBR(
-          8 * unit,
-          7.5 * unit,
+          8.5 * unit,
+          8.5 * unit,
           14 * unit,
-          13.5 * unit,
+          14 * unit,
           Radius.circular(1 * unit),
         ),
         Paint()..color = badge,
