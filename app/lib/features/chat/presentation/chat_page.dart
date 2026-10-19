@@ -47,6 +47,7 @@ class _IdeLayoutState extends State<_IdeLayout> {
   static const _closePanelWidth = 120.0;
 
   bool _projectPanelOpen = true;
+  double _terminalHeight = 240;
   double _projectPanelWidth = 260;
   double _dragWidth = 260;
 
@@ -57,6 +58,12 @@ class _IdeLayoutState extends State<_IdeLayout> {
     setState(() {
       _dragWidth += delta;
       _projectPanelWidth = _dragWidth.clamp(_minPanelWidth, _maxPanelWidth);
+    });
+  }
+
+  void _resizeTerminal(double delta) {
+    setState(() {
+      _terminalHeight = (_terminalHeight - delta).clamp(120.0, 600.0);
     });
   }
 
@@ -139,7 +146,15 @@ class _IdeLayoutState extends State<_IdeLayout> {
                     ],
                   ),
                 ),
-                TerminalComposer(onSend: context.read<ChatCubit>().send),
+                PanelResizeHandle(
+                  axis: Axis.vertical,
+                  onDrag: _resizeTerminal,
+                  onDragEnd: () {},
+                ),
+                TerminalComposer(
+                  onSend: context.read<ChatCubit>().send,
+                  height: _terminalHeight,
+                ),
                 IdeStatusBar(fileName: fileName, lineCount: lines?.length ?? 0),
               ],
             );

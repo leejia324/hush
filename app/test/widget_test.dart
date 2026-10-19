@@ -5,6 +5,7 @@ import 'package:hush/core/platform/screen_cover.dart';
 import 'package:hush/features/chat/data/fake_chat_repository.dart';
 import 'package:hush/features/chat/presentation/widgets/panel_resize_handle.dart';
 import 'package:hush/features/chat/presentation/widgets/project_panel.dart';
+import 'package:hush/features/chat/presentation/widgets/terminal_composer.dart';
 import 'package:hush/main.dart';
 
 void main() {
@@ -67,7 +68,12 @@ void main() {
     final panel = find.byType(ProjectPanel);
     final before = tester.getSize(panel).width;
 
-    await tester.drag(find.byType(PanelResizeHandle), const Offset(100, 0));
+    await tester.drag(
+      find.byWidgetPredicate(
+        (w) => w is PanelResizeHandle && w.axis == Axis.horizontal,
+      ),
+      const Offset(100, 0),
+    );
     await tester.pumpAndSettle();
 
     expect(tester.getSize(panel).width, before + 100);
@@ -76,10 +82,31 @@ void main() {
   testWidgets('Project 패널을 아주 좁게 끌면 닫힘', (tester) async {
     await pumpApp(tester);
 
-    await tester.drag(find.byType(PanelResizeHandle), const Offset(-200, 0));
+    await tester.drag(
+      find.byWidgetPredicate(
+        (w) => w is PanelResizeHandle && w.axis == Axis.horizontal,
+      ),
+      const Offset(-200, 0),
+    );
     await tester.pumpAndSettle();
 
     expect(find.byType(ProjectPanel), findsNothing);
+  });
+
+  testWidgets('터미널 위쪽 경계를 끌면 높이가 바뀜', (tester) async {
+    await pumpApp(tester);
+    final terminal = find.byType(TerminalComposer);
+    final before = tester.getSize(terminal).height;
+
+    await tester.drag(
+      find.byWidgetPredicate(
+        (w) => w is PanelResizeHandle && w.axis == Axis.vertical,
+      ),
+      const Offset(0, -100),
+    );
+    await tester.pumpAndSettle();
+
+    expect(tester.getSize(terminal).height, greaterThan(before));
   });
 
   testWidgets('화면 가리기를 켜면 코드 화면으로 바뀜', (tester) async {

@@ -5,9 +5,10 @@ import '../../../../core/theme/ide_colors.dart';
 import '../../../../core/theme/ide_theme.dart';
 
 class TerminalComposer extends StatefulWidget {
-  const TerminalComposer({super.key, required this.onSend});
+  const TerminalComposer({super.key, required this.onSend, this.height = 240});
 
   final ValueChanged<String> onSend;
+  final double height;
 
   @override
   State<TerminalComposer> createState() => _TerminalComposerState();
@@ -84,96 +85,174 @@ class _TerminalComposerState extends State<TerminalComposer> {
   @override
   Widget build(BuildContext context) {
     final colors = IdeColors.of(context);
-    final code = IdeTheme.editor(colors);
+    final code = IdeTheme.editor(colors).copyWith(fontSize: 13);
+    final ui = IdeTheme.ui(colors).copyWith(fontSize: 13, height: 1);
+    final divider = Theme.of(context).dividerColor;
 
     return Container(
+      height: widget.height,
       decoration: BoxDecoration(
         color: colors.editorBackground,
-        border: Border(top: BorderSide(color: Theme.of(context).dividerColor)),
+        border: Border(top: BorderSide(color: divider)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Container(
-            height: 28,
-            color: colors.panel,
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            alignment: Alignment.centerLeft,
-            child: Text('Terminal', style: code.copyWith(fontSize: 12)),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 6, 8, 6),
+          SizedBox(
+            height: 36,
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 1),
-                  child: Text.rich(
-                    TextSpan(
+                const SizedBox(width: 16),
+                Text('터미널', style: ui.copyWith(fontWeight: FontWeight.w600)),
+                const SizedBox(width: 20),
+                Container(
+                  height: 36,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(color: colors.accent, width: 2),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Text('로컬', style: ui),
+                      const SizedBox(width: 8),
+                      Icon(Icons.close, size: 12, color: colors.comment),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Icon(Icons.add, size: 16, color: colors.comment),
+                const Spacer(),
+                Icon(Icons.more_vert, size: 16, color: colors.comment),
+                const SizedBox(width: 12),
+                Icon(Icons.remove, size: 16, color: colors.comment),
+                const SizedBox(width: 12),
+              ],
+            ),
+          ),
+          Expanded(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                SizedBox(
+                  width: 40,
+                  child: Column(
+                    children: [
+                      for (final icon in const [
+                        Icons.splitscreen_outlined,
+                        Icons.history,
+                        Icons.delete_outline,
+                      ])
+                        Padding(
+                          padding: const EdgeInsets.only(top: 10),
+                          child: Icon(icon, size: 16, color: colors.comment),
+                        ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(8, 6, 12, 8),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        TextSpan(
-                          text: 'study-notes ',
-                          style: code.copyWith(color: colors.function),
+                        Expanded(
+                          child: ListView(
+                            reverse: true,
+                            children: [
+                              for (final line in _history.reversed)
+                                Text(
+                                  line,
+                                  style: code.copyWith(color: colors.text),
+                                ),
+                            ],
+                          ),
                         ),
-                        TextSpan(
-                          text: 'git:(',
-                          style: code.copyWith(color: colors.keyword),
-                        ),
-                        TextSpan(
-                          text: 'main',
-                          style: code.copyWith(color: colors.property),
-                        ),
-                        TextSpan(
-                          text: ') ❯ ',
-                          style: code.copyWith(color: colors.keyword),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text.rich(_prompt(code, colors)),
+                            Expanded(
+                              child: Focus(
+                                onKeyEvent: _onKey,
+                                child: TextField(
+                                  controller: _controller,
+                                  focusNode: _focusNode,
+                                  autofocus: true,
+                                  minLines: 1,
+                                  maxLines: 5,
+                                  style: code,
+                                  cursorColor: colors.text,
+                                  decoration: const InputDecoration(
+                                    isCollapsed: true,
+                                    border: InputBorder.none,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            _FormatButton(
+                              label: 'B',
+                              tooltip: '굵게 ⌘B',
+                              onTap: () => _wrap('**'),
+                            ),
+                            _FormatButton(
+                              label: 'I',
+                              tooltip: '기울임 ⌘I',
+                              onTap: () => _wrap('*'),
+                            ),
+                            _FormatButton(
+                              label: 'S',
+                              tooltip: '취소선 ⌘⇧X',
+                              onTap: () => _wrap('~~'),
+                            ),
+                            _FormatButton(
+                              label: '...',
+                              tooltip: '비밀 ⌘⇧H',
+                              onTap: () => _wrap('||'),
+                            ),
+                          ],
                         ),
                       ],
                     ),
                   ),
-                ),
-                Expanded(
-                  child: Focus(
-                    onKeyEvent: _onKey,
-                    child: TextField(
-                      controller: _controller,
-                      focusNode: _focusNode,
-                      autofocus: true,
-                      minLines: 1,
-                      maxLines: 5,
-                      style: code,
-                      cursorColor: colors.text,
-                      decoration: const InputDecoration(
-                        isCollapsed: true,
-                        border: InputBorder.none,
-                      ),
-                    ),
-                  ),
-                ),
-                _FormatButton(
-                  label: 'B',
-                  tooltip: '굵게 ⌘B',
-                  onTap: () => _wrap('**'),
-                ),
-                _FormatButton(
-                  label: 'I',
-                  tooltip: '기울임 ⌘I',
-                  onTap: () => _wrap('*'),
-                ),
-                _FormatButton(
-                  label: 'S',
-                  tooltip: '취소선 ⌘⇧X',
-                  onTap: () => _wrap('~~'),
-                ),
-                _FormatButton(
-                  label: '...',
-                  tooltip: '비밀 ⌘⇧H',
-                  onTap: () => _wrap('||'),
                 ),
               ],
             ),
           ),
         ],
       ),
+    );
+  }
+
+  static const _history = [
+    'Last login: Sun Oct 19 09:12:44 on ttys003',
+    'study-notes git:(main) ❯ ./gradlew test',
+    '',
+    'BUILD SUCCESSFUL in 4s',
+    '7 actionable tasks: 2 executed, 5 up-to-date',
+  ];
+
+  TextSpan _prompt(TextStyle code, IdeColors colors) {
+    return TextSpan(
+      children: [
+        TextSpan(
+          text: 'study-notes ',
+          style: code.copyWith(color: colors.function),
+        ),
+        TextSpan(
+          text: 'git:(',
+          style: code.copyWith(color: colors.keyword),
+        ),
+        TextSpan(
+          text: 'main',
+          style: code.copyWith(color: colors.property),
+        ),
+        TextSpan(
+          text: ') ❯ ',
+          style: code.copyWith(color: colors.keyword),
+        ),
+      ],
     );
   }
 }
