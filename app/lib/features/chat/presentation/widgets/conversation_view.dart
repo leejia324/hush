@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/ide_colors.dart';
 import '../../../../core/theme/ide_theme.dart';
 import '../conversation/code_line.dart';
+import 'hidden_secret.dart';
 import 'secret_press.dart';
 
 class ConversationView extends StatefulWidget {
@@ -183,16 +184,10 @@ class _CodeLineRow extends StatelessWidget {
 
     return WidgetSpan(
       alignment: PlaceholderAlignment.middle,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 4),
-        decoration: BoxDecoration(
-          color: colors.lineNumber.withValues(alpha: 0.35),
-          borderRadius: BorderRadius.circular(3),
-        ),
-        child: Text(
-          '...',
-          style: base.copyWith(color: colors.comment, height: 1.2),
-        ),
+      child: HiddenSecret(
+        text: token.text,
+        style: style,
+        color: colors.lineNumber.withValues(alpha: 0.35),
       ),
     );
   }
