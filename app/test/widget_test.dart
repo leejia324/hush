@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hush/core/platform/screen_cover.dart';
+import 'package:hush/core/theme/ide_theme.dart';
 import 'package:hush/features/chat/data/fake_chat_repository.dart';
 import 'package:hush/features/chat/presentation/widgets/editor_tab_bar.dart';
+import 'package:hush/features/chat/presentation/widgets/ide_toolbar.dart';
 import 'package:hush/features/chat/presentation/widgets/panel_resize_handle.dart';
 import 'package:hush/features/chat/presentation/widgets/project_panel.dart';
 import 'package:hush/features/chat/presentation/widgets/terminal_composer.dart';
@@ -139,6 +141,24 @@ void main() {
       findsNothing,
     );
   });
+
+  for (final width in [800.0, 600.0, 400.0]) {
+    testWidgets('창 폭 $width에서 툴바가 넘치지 않음', (tester) async {
+      tester.view.physicalSize = Size(width, 700);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: IdeTheme.dark(),
+          home: Scaffold(body: IdeToolbar(onCover: () {})),
+        ),
+      );
+
+      expect(tester.takeException(), isNull);
+      expect(find.byTooltip('화면 가리기 ⌥Space'), findsOneWidget);
+    });
+  }
 
   testWidgets('화면 가리기를 켜면 코드 화면으로 바뀜', (tester) async {
     addTearDown(() => screenCovered.value = false);

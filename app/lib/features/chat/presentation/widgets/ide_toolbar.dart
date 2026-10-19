@@ -23,80 +23,131 @@ class IdeToolbar extends StatelessWidget {
           bottom: BorderSide(color: Theme.of(context).dividerColor),
         ),
       ),
-      child: Row(
-        children: [
-          Container(
-            width: 20,
-            height: 20,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: colors.accent,
-              borderRadius: BorderRadius.circular(5),
-            ),
-            child: const Text(
-              'S',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 11,
-                height: 1,
-                fontWeight: FontWeight.w700,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final width = constraints.maxWidth;
+          final showDevice = width >= 830;
+          final showRunLabel = width >= 660;
+          final showExtras = width >= 660;
+          final showRoomActions = width >= 450;
+
+          return Row(
+            children: [
+              Expanded(
+                child: Row(
+                  children: [
+                    Container(
+                      width: 20,
+                      height: 20,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: colors.accent,
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: const Text(
+                        'S',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 11,
+                          height: 1,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
+                        'study-notes',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: label.copyWith(fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                    Icon(Icons.expand_more, size: 16, color: colors.comment),
+                    const SizedBox(width: 16),
+                    Icon(Icons.call_split, size: 15, color: colors.comment),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        'main',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: label,
+                      ),
+                    ),
+                    Icon(Icons.expand_more, size: 16, color: colors.comment),
+                  ],
+                ),
               ),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Text(
-            'study-notes',
-            style: label.copyWith(fontWeight: FontWeight.w600),
-          ),
-          Icon(Icons.expand_more, size: 16, color: colors.comment),
-          const SizedBox(width: 16),
-          Icon(Icons.call_split, size: 15, color: colors.comment),
-          const SizedBox(width: 6),
-          Text('main', style: label),
-          Icon(Icons.expand_more, size: 16, color: colors.comment),
-          const Spacer(),
-          Icon(Icons.laptop_mac, size: 15, color: colors.comment),
-          const SizedBox(width: 6),
-          Text('macOS (desktop)', style: label),
-          Icon(Icons.expand_more, size: 16, color: colors.comment),
-          const SizedBox(width: 12),
-          const FileTreeIcon(FileTreeIconType.kotlin),
-          const SizedBox(width: 6),
-          Text('NotesApp.kt', style: label),
-          Icon(Icons.expand_more, size: 16, color: colors.comment),
-          const SizedBox(width: 10),
-          Container(
-            width: 26,
-            height: 26,
-            decoration: BoxDecoration(
-              color: colors.string.withValues(alpha: 0.9),
-              borderRadius: BorderRadius.circular(5),
-            ),
-            child: const Icon(Icons.play_arrow, size: 18, color: Colors.white),
-          ),
-          const SizedBox(width: 8),
-          Icon(Icons.bug_report_outlined, size: 17, color: colors.comment),
-          const SizedBox(width: 4),
-          Icon(Icons.more_vert, size: 17, color: colors.comment),
-          const SizedBox(width: 12),
-          _ToolbarButton(icon: Icons.link, tooltip: '초대 링크', onPressed: () {}),
-          _ToolbarButton(
-            icon: Icons.delete_outline,
-            tooltip: '방 삭제',
-            onPressed: () {},
-          ),
-          _ToolbarButton(
-            icon: Icons.visibility_off_outlined,
-            tooltip: '화면 가리기 ⌥Space',
-            onPressed: onCover,
-          ),
-          _ToolbarButton(icon: Icons.search, tooltip: '검색', onPressed: () {}),
-          _ToolbarButton(
-            icon: Icons.settings_outlined,
-            tooltip: '설정',
-            onPressed: () {},
-          ),
-        ],
+              if (showDevice) ...[
+                Icon(Icons.laptop_mac, size: 15, color: colors.comment),
+                const SizedBox(width: 6),
+                Text('macOS (desktop)', style: label),
+                Icon(Icons.expand_more, size: 16, color: colors.comment),
+                const SizedBox(width: 12),
+              ],
+              const FileTreeIcon(FileTreeIconType.kotlin),
+              if (showRunLabel) ...[
+                const SizedBox(width: 6),
+                Text('NotesApp.kt', style: label),
+                Icon(Icons.expand_more, size: 16, color: colors.comment),
+              ],
+              const SizedBox(width: 10),
+              Container(
+                width: 26,
+                height: 26,
+                decoration: BoxDecoration(
+                  color: colors.string.withValues(alpha: 0.9),
+                  borderRadius: BorderRadius.circular(5),
+                ),
+                child: const Icon(
+                  Icons.play_arrow,
+                  size: 18,
+                  color: Colors.white,
+                ),
+              ),
+              if (showExtras) ...[
+                const SizedBox(width: 8),
+                Icon(
+                  Icons.bug_report_outlined,
+                  size: 17,
+                  color: colors.comment,
+                ),
+                const SizedBox(width: 4),
+                Icon(Icons.more_vert, size: 17, color: colors.comment),
+              ],
+              const SizedBox(width: 12),
+              if (showRoomActions) ...[
+                _ToolbarButton(
+                  icon: Icons.link,
+                  tooltip: '초대 링크',
+                  onPressed: () {},
+                ),
+                _ToolbarButton(
+                  icon: Icons.delete_outline,
+                  tooltip: '방 삭제',
+                  onPressed: () {},
+                ),
+              ],
+              _ToolbarButton(
+                icon: Icons.visibility_off_outlined,
+                tooltip: '화면 가리기 ⌥Space',
+                onPressed: onCover,
+              ),
+              if (showExtras)
+                _ToolbarButton(
+                  icon: Icons.search,
+                  tooltip: '검색',
+                  onPressed: () {},
+                ),
+              _ToolbarButton(
+                icon: Icons.settings_outlined,
+                tooltip: '설정',
+                onPressed: () {},
+              ),
+            ],
+          );
+        },
       ),
     );
   }
