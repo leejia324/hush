@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'ide_colors.dart';
 
 abstract final class IdeTheme {
-  static const codeFontFamily = 'Menlo';
-  static const codeFontFallback = ['Apple SD Gothic Neo'];
   static const codeFontSize = 14.0;
   static const lineHeight = 24.0;
 
@@ -13,8 +11,6 @@ abstract final class IdeTheme {
   static ThemeData light() => _build(Brightness.light, IdeColors.light);
 
   static TextStyle code(IdeColors colors) => TextStyle(
-    fontFamily: codeFontFamily,
-    fontFamilyFallback: codeFontFallback,
     fontSize: codeFontSize,
     height: lineHeight / codeFontSize,
     color: colors.text,
