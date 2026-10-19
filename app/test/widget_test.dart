@@ -9,17 +9,24 @@ import 'package:hush/features/chat/presentation/widgets/ide_toolbar.dart';
 import 'package:hush/features/chat/presentation/widgets/panel_resize_handle.dart';
 import 'package:hush/features/chat/presentation/widgets/project_panel.dart';
 import 'package:hush/features/chat/presentation/widgets/terminal_composer.dart';
+import 'package:hush/features/settings/domain/theme_preference.dart';
 import 'package:hush/main.dart';
 
+import 'support/memory_settings_repository.dart';
+
 void main() {
+  late MemorySettingsRepository settings;
+
   Future<void> pumpApp(WidgetTester tester) async {
     tester.view.physicalSize = const Size(1400, 900);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
+    settings = MemorySettingsRepository();
 
     await tester.pumpWidget(
       HushApp(
         repository: FakeChatRepository(now: () => DateTime(2026, 10, 14, 15)),
+        settingsRepository: settings,
       ),
     );
     await tester.pumpAndSettle();
@@ -151,7 +158,9 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           theme: IdeTheme.dark(),
-          home: Scaffold(body: IdeToolbar(onCover: () {})),
+          home: Scaffold(
+            body: IdeToolbar(onCover: () {}, onSettings: () {}),
+          ),
         ),
       );
 
@@ -159,6 +168,21 @@ void main() {
       expect(find.byTooltip('화면 가리기 ⌥Space'), findsOneWidget);
     });
   }
+
+  testWidgets('설정 창에서 테마를 바꾸면 바로 적용되고 저장됨', (tester) async {
+    await pumpApp(tester);
+
+    await tester.tap(find.byTooltip('설정'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('시스템 설정 따름'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('라이트').last);
+    await tester.pumpAndSettle();
+
+    final app = tester.widget<MaterialApp>(find.byType(MaterialApp));
+    expect(app.themeMode, ThemeMode.light);
+    expect(settings.saved, ThemePreference.light);
+  });
 
   testWidgets('화면 가리기를 켜면 코드 화면으로 바뀜', (tester) async {
     addTearDown(() => screenCovered.value = false);

@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/platform/screen_cover.dart';
 import '../../../core/theme/ide_colors.dart';
 import '../../../core/theme/ide_theme.dart';
+import '../../settings/presentation/settings_dialog.dart';
 import '../domain/chat_repository.dart';
 import 'bloc/chat_cubit.dart';
 import 'bloc/chat_state.dart';
@@ -119,7 +120,10 @@ class _IdeLayoutState extends State<_IdeLayout> {
 
             return Column(
               children: [
-                IdeToolbar(onCover: () => screenCovered.value = true),
+                IdeToolbar(
+                  onCover: () => screenCovered.value = true,
+                  onSettings: () => SettingsDialog.show(context),
+                ),
                 Expanded(
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.stretch,

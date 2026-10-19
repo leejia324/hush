@@ -5,9 +5,14 @@ import '../../../../core/theme/ide_theme.dart';
 import 'file_tree_icon.dart';
 
 class IdeToolbar extends StatelessWidget {
-  const IdeToolbar({super.key, required this.onCover});
+  const IdeToolbar({
+    super.key,
+    required this.onCover,
+    required this.onSettings,
+  });
 
   final VoidCallback onCover;
+  final VoidCallback onSettings;
 
   @override
   Widget build(BuildContext context) {
@@ -143,7 +148,7 @@ class IdeToolbar extends StatelessWidget {
               _ToolbarButton(
                 icon: Icons.settings_outlined,
                 tooltip: '설정',
-                onPressed: () {},
+                onPressed: onSettings,
               ),
             ],
           );
