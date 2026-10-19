@@ -27,8 +27,20 @@ class ChatPage extends StatelessWidget {
       create: (context) => ChatCubit(context.read<ChatRepository>())..load(),
       child: ValueListenableBuilder(
         valueListenable: screenCovered,
-        builder: (context, covered, child) =>
-            covered ? const ScreenCover() : child!,
+        builder: (context, covered, child) => Stack(
+          fit: StackFit.expand,
+          children: [
+            ExcludeFocus(
+              excluding: covered,
+              child: Visibility(
+                visible: !covered,
+                maintainState: true,
+                child: child!,
+              ),
+            ),
+            if (covered) const ScreenCover(),
+          ],
+        ),
         child: const _IdeLayout(),
       ),
     );

@@ -206,6 +206,31 @@ void main() {
     expect(settings.saved, ThemePreference.system);
   });
 
+  testWidgets('화면 가리기를 풀어도 열어 둔 탭이 남아 있음', (tester) async {
+    addTearDown(() => screenCovered.value = false);
+    await pumpApp(tester);
+    await tester.tap(find.text('동아리방.kt').first);
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 50)),
+    );
+    await tester.pumpAndSettle();
+
+    screenCovered.value = true;
+    await tester.pump();
+    screenCovered.value = false;
+    await tester.pumpAndSettle();
+
+    final tabs = find.byType(EditorTabBar);
+    expect(
+      find.descendant(of: tabs, matching: find.text('수행평가조.kt')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: tabs, matching: find.text('동아리방.kt')),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('화면 가리기를 켜면 코드 화면으로 바뀜', (tester) async {
     addTearDown(() => screenCovered.value = false);
     await pumpApp(tester);
