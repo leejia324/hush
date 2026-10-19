@@ -28,7 +28,7 @@ void main() {
     isSystem: isSystem,
   );
 
-  test('대화를 함수 호출 코드로 바꿈', () {
+  test('대화를 함수 호출 코드로 바꾸고 여러 줄 메시지는 """ 문자열로', () {
     final lines = ConversationCode.build(
       roomName: '수행평가조',
       members: members,
@@ -53,7 +53,11 @@ void main() {
       '        // 10월 14일 (수)',
       '        message(고양이발, "발표 자료 올릴게", at(14, 4)),',
       '        message(새벽세시, "잠깐 나 할 말 있어", at(14, 15)),',
-      r'        message(새벽세시, "질문 리스트\n1. 주제\n2. 역할", at(14, 16)),',
+      '        message(새벽세시, """',
+      '            질문 리스트',
+      '            1. 주제',
+      '            2. 역할',
+      '        """.trimIndent(), at(14, 16)),',
       '        system("감자 → 감자튀김", at(14, 17)),',
       '        // TODO: 새 메시지',
       '        message(나, "ㅇㅋ", at(14, 18)),',
@@ -76,6 +80,25 @@ void main() {
           .where((token) => token.kind == CodeTokenKind.escape)
           .map((token) => token.text),
       [r'\"', r'\$', r'\"', r'\\'],
+    );
+  });
+
+  test('여러 줄 메시지의 모든 줄이 같은 메시지로 묶임', () {
+    final lines = ConversationCode.build(
+      roomName: '방',
+      members: members,
+      messages: [message('1', 'cat', 'a\n||b||', at(9, 0))],
+    );
+
+    final messageLines = lines.where((line) => line.messageId == '1');
+    expect(messageLines, hasLength(4));
+    expect(
+      messageLines
+          .expand((line) => line.tokens)
+          .where((t) => t.secret)
+          .single
+          .text,
+      'b',
     );
   });
 

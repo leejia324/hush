@@ -74,7 +74,7 @@ abstract final class ConversationCode {
         markerPlaced = true;
         changed = true;
       }
-      lines.add(
+      lines.addAll(
         _call(
           message,
           sender: message.isSystem
@@ -92,34 +92,89 @@ abstract final class ConversationCode {
     return lines;
   }
 
-  static CodeLine _call(
+  static const _rawIndent = '            ';
+
+  static List<CodeLine> _call(
     Message message, {
     required String? sender,
     required bool changed,
   }) {
-    return CodeLine(
-      [
+    final head = <CodeToken>[
+      const CodeToken(_itemIndent, CodeTokenKind.plain),
+      CodeToken(sender == null ? 'system' : 'message', CodeTokenKind.function),
+      CodeToken(sender == null ? '(' : '($sender, ', CodeTokenKind.plain),
+    ];
+    final tail = <CodeToken>[
+      const CodeToken(', ', CodeTokenKind.plain),
+      const CodeToken('at', CodeTokenKind.function),
+      const CodeToken('(', CodeTokenKind.plain),
+      CodeToken('${message.sentAt.hour}', CodeTokenKind.number),
+      const CodeToken(', ', CodeTokenKind.plain),
+      CodeToken('${message.sentAt.minute}', CodeTokenKind.number),
+      const CodeToken(')),', CodeTokenKind.plain),
+    ];
+    final segments = SecretSyntaxParser.parse(message.text);
+
+    CodeLine line(List<CodeToken> tokens) =>
+        CodeLine(tokens, messageId: message.id, changed: changed);
+
+    if (!message.text.contains('\n')) {
+      return [
+        line([
+          ...head,
+          const CodeToken('"', CodeTokenKind.string),
+          for (final segment in segments) ..._stringTokens(segment),
+          const CodeToken('"', CodeTokenKind.string),
+          ...tail,
+        ]),
+      ];
+    }
+
+    return [
+      line([...head, const CodeToken('"""', CodeTokenKind.string)]),
+      for (final textLine in _splitLines(segments))
+        line([
+          const CodeToken(_rawIndent, CodeTokenKind.plain),
+          for (final segment in textLine)
+            CodeToken(
+              segment.text,
+              CodeTokenKind.string,
+              secret: segment.secret,
+              bold: segment.bold,
+              italic: segment.italic,
+              strike: segment.strike,
+            ),
+        ]),
+      line([
         const CodeToken(_itemIndent, CodeTokenKind.plain),
-        CodeToken(
-          sender == null ? 'system' : 'message',
-          CodeTokenKind.function,
-        ),
-        CodeToken(sender == null ? '(' : '($sender, ', CodeTokenKind.plain),
-        const CodeToken('"', CodeTokenKind.string),
-        for (final segment in SecretSyntaxParser.parse(message.text))
-          ..._stringTokens(segment),
-        const CodeToken('"', CodeTokenKind.string),
-        const CodeToken(', ', CodeTokenKind.plain),
-        const CodeToken('at', CodeTokenKind.function),
-        const CodeToken('(', CodeTokenKind.plain),
-        CodeToken('${message.sentAt.hour}', CodeTokenKind.number),
-        const CodeToken(', ', CodeTokenKind.plain),
-        CodeToken('${message.sentAt.minute}', CodeTokenKind.number),
-        const CodeToken(')),', CodeTokenKind.plain),
-      ],
-      messageId: message.id,
-      changed: changed,
-    );
+        const CodeToken('"""', CodeTokenKind.string),
+        const CodeToken('.', CodeTokenKind.plain),
+        const CodeToken('trimIndent', CodeTokenKind.function),
+        const CodeToken('()', CodeTokenKind.plain),
+        ...tail,
+      ]),
+    ];
+  }
+
+  static List<List<MessageSegment>> _splitLines(List<MessageSegment> segments) {
+    final lines = <List<MessageSegment>>[[]];
+    for (final segment in segments) {
+      final parts = segment.text.split('\n');
+      for (var p = 0; p < parts.length; p++) {
+        if (p > 0) lines.add([]);
+        if (parts[p].isEmpty) continue;
+        lines.last.add(
+          MessageSegment(
+            parts[p],
+            secret: segment.secret,
+            bold: segment.bold,
+            italic: segment.italic,
+            strike: segment.strike,
+          ),
+        );
+      }
+    }
+    return lines;
   }
 
   static Iterable<CodeToken> _stringTokens(MessageSegment segment) sync* {
@@ -136,7 +191,6 @@ abstract final class ConversationCode {
 
     for (final char in segment.text.split('')) {
       final escaped = switch (char) {
-        '\n' => r'\n',
         '"' => r'\"',
         r'\' => r'\\',
         r'$' => r'\$',
