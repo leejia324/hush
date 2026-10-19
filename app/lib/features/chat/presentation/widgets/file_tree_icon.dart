@@ -19,9 +19,9 @@ class FileTreeIcon extends StatelessWidget {
   static const size = 14.0;
 
   static const _kotlinGradient = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [Color(0xFF7F52FF), Color(0xFFC711E1), Color(0xFFE44857)],
+    begin: Alignment.topRight,
+    end: Alignment.bottomLeft,
+    colors: [Color(0xFF2FB5A3), Color(0xFF3574F0), Color(0xFF6B5CF6)],
   );
 
   final FileTreeIconType type;
@@ -45,44 +45,10 @@ class FileTreeIcon extends StatelessWidget {
         FileTreeIconType.configFolder => _Folder(
           color: colors.comment.withValues(alpha: 0.55),
         ),
-        FileTreeIconType.kotlin => const _Badge(
-          label: 'K',
-          gradient: _kotlinGradient,
-        ),
-        FileTreeIconType.kotlinScript => const _Badge(
-          label: 'S',
-          gradient: _kotlinGradient,
-        ),
+        FileTreeIconType.kotlin || FileTreeIconType.kotlinScript =>
+          const CustomPaint(painter: _KotlinMarkPainter(_kotlinGradient)),
         FileTreeIconType.markdown => _Markdown(color: colors.comment),
       },
-    );
-  }
-}
-
-class _Badge extends StatelessWidget {
-  const _Badge({required this.label, required this.gradient});
-
-  final String label;
-  final Gradient gradient;
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: gradient,
-        borderRadius: BorderRadius.circular(3),
-      ),
-      child: Center(
-        child: Text(
-          label,
-          style: const TextStyle(
-            fontSize: 9,
-            height: 1,
-            fontWeight: FontWeight.w800,
-            color: Colors.white,
-          ),
-        ),
-      ),
     );
   }
 }
@@ -192,4 +158,33 @@ class _FolderPainter extends CustomPainter {
       oldDelegate.color != color ||
       oldDelegate.badge != badge ||
       oldDelegate.dot != dot;
+}
+
+class _KotlinMarkPainter extends CustomPainter {
+  const _KotlinMarkPainter(this.gradient);
+
+  final Gradient gradient;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final inset = size.width * 0.07;
+    final rect = Rect.fromLTRB(
+      inset,
+      inset,
+      size.width - inset,
+      size.height - inset,
+    );
+    final path = Path()
+      ..moveTo(rect.left, rect.top)
+      ..lineTo(rect.right, rect.top)
+      ..lineTo(rect.center.dx, rect.center.dy)
+      ..lineTo(rect.right, rect.bottom)
+      ..lineTo(rect.left, rect.bottom)
+      ..close();
+    canvas.drawPath(path, Paint()..shader = gradient.createShader(rect));
+  }
+
+  @override
+  bool shouldRepaint(_KotlinMarkPainter oldDelegate) =>
+      oldDelegate.gradient != gradient;
 }
