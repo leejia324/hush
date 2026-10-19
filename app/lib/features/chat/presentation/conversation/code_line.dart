@@ -1,10 +1,18 @@
-enum CodeTokenKind { plain, keyword, function, string, comment, todo }
+enum CodeTokenKind {
+  plain,
+  keyword,
+  function,
+  string,
+  escape,
+  number,
+  comment,
+  todo,
+}
 
 class CodeToken {
   const CodeToken(
     this.text,
     this.kind, {
-    this.colorIndex,
     this.secret = false,
     this.bold = false,
     this.italic = false,
@@ -13,7 +21,6 @@ class CodeToken {
 
   final String text;
   final CodeTokenKind kind;
-  final int? colorIndex;
   final bool secret;
   final bool bold;
   final bool italic;

@@ -130,9 +130,10 @@ class _CodeLineRow extends StatelessWidget {
     final colors = IdeColors.of(context);
     final base = IdeTheme.editor(colors);
 
-    return SizedBox(
-      height: IdeTheme.lineHeight,
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: IdeTheme.lineHeight),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
             width: 48,
@@ -145,6 +146,7 @@ class _CodeLineRow extends StatelessWidget {
           const SizedBox(width: 8),
           Container(
             width: 3,
+            height: IdeTheme.lineHeight,
             color: line.changed ? colors.accent : Colors.transparent,
           ),
           const SizedBox(width: 12),
@@ -155,9 +157,6 @@ class _CodeLineRow extends StatelessWidget {
                   for (final token in line.tokens) _span(token, base, colors),
                 ],
               ),
-              maxLines: 1,
-              overflow: TextOverflow.clip,
-              softWrap: false,
             ),
           ),
         ],
@@ -196,11 +195,10 @@ class _CodeLineRow extends StatelessWidget {
     return switch (token.kind) {
       CodeTokenKind.plain => colors.text,
       CodeTokenKind.keyword => colors.keyword,
-      CodeTokenKind.function =>
-        token.colorIndex == null
-            ? colors.function
-            : colors.person(token.colorIndex!),
+      CodeTokenKind.function => colors.function,
       CodeTokenKind.string => colors.string,
+      CodeTokenKind.escape => colors.escape,
+      CodeTokenKind.number => colors.number,
       CodeTokenKind.comment => colors.comment,
       CodeTokenKind.todo => colors.todo,
     };

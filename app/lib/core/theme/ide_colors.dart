@@ -8,6 +8,8 @@ class IdeColors extends ThemeExtension<IdeColors> {
     required this.text,
     required this.lineNumber,
     required this.string,
+    required this.escape,
+    required this.number,
     required this.keyword,
     required this.function,
     required this.property,
@@ -25,6 +27,8 @@ class IdeColors extends ThemeExtension<IdeColors> {
     text: Color(0xFFDFE1E5),
     lineNumber: Color(0xFF4B5059),
     string: Color(0xFF6AAB73),
+    escape: Color(0xFFCF8E6D),
+    number: Color(0xFF2AACB8),
     keyword: Color(0xFFCF8E6D),
     function: Color(0xFF56A8F5),
     property: Color(0xFFC77DBB),
@@ -47,6 +51,8 @@ class IdeColors extends ThemeExtension<IdeColors> {
     text: Color(0xFF1F2023),
     lineNumber: Color(0xFFAEB3C2),
     string: Color(0xFF067D17),
+    escape: Color(0xFF0037A6),
+    number: Color(0xFF1750EB),
     keyword: Color(0xFF0033B3),
     function: Color(0xFF00627A),
     property: Color(0xFF871094),
@@ -68,6 +74,8 @@ class IdeColors extends ThemeExtension<IdeColors> {
   final Color text;
   final Color lineNumber;
   final Color string;
+  final Color escape;
+  final Color number;
   final Color keyword;
   final Color function;
   final Color property;
@@ -90,6 +98,8 @@ class IdeColors extends ThemeExtension<IdeColors> {
     Color? text,
     Color? lineNumber,
     Color? string,
+    Color? escape,
+    Color? number,
     Color? keyword,
     Color? function,
     Color? property,
@@ -106,6 +116,8 @@ class IdeColors extends ThemeExtension<IdeColors> {
       text: text ?? this.text,
       lineNumber: lineNumber ?? this.lineNumber,
       string: string ?? this.string,
+      escape: escape ?? this.escape,
+      number: number ?? this.number,
       keyword: keyword ?? this.keyword,
       function: function ?? this.function,
       property: property ?? this.property,
@@ -131,6 +143,8 @@ class IdeColors extends ThemeExtension<IdeColors> {
       text: Color.lerp(text, other.text, t)!,
       lineNumber: Color.lerp(lineNumber, other.lineNumber, t)!,
       string: Color.lerp(string, other.string, t)!,
+      escape: Color.lerp(escape, other.escape, t)!,
+      number: Color.lerp(number, other.number, t)!,
       keyword: Color.lerp(keyword, other.keyword, t)!,
       function: Color.lerp(function, other.function, t)!,
       property: Color.lerp(property, other.property, t)!,

@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hush/features/chat/domain/member.dart';
 import 'package:hush/features/chat/domain/message.dart';
+import 'package:hush/features/chat/presentation/conversation/code_line.dart';
 import 'package:hush/features/chat/presentation/conversation/conversation_code.dart';
 
 void main() {
@@ -27,7 +28,7 @@ void main() {
     isSystem: isSystem,
   );
 
-  test('대화를 합의한 코드 형식으로 바꿈', () {
+  test('대화를 함수 호출 코드로 바꿈', () {
     final lines = ConversationCode.build(
       roomName: '수행평가조',
       members: members,
@@ -35,9 +36,8 @@ void main() {
         message('1', 'cat', '발표 자료 올릴게', at(14, 4)),
         message('2', 'dawn', '잠깐 나 할 말 있어', at(14, 15)),
         message('3', 'dawn', '질문 리스트\n1. 주제\n2. 역할', at(14, 16)),
-        message('4', 'dawn', 'ㅋㅋ', at(14, 16)),
-        message('5', 'cat', '감자 → 감자튀김', at(14, 17), isSystem: true),
-        message('6', 'me', 'ㅇㅋ', at(14, 18)),
+        message('4', 'cat', '감자 → 감자튀김', at(14, 17), isSystem: true),
+        message('5', 'me', 'ㅇㅋ', at(14, 18)),
       ],
       newMessagesAfter: at(14, 17),
     );
@@ -47,26 +47,36 @@ void main() {
       '',
       'import notes.core.*',
       '',
-      'val 수행평가조 = chat {',
-      '    // 10월 14일 (수)',
-      '    고양이발(',
-      '        "발표 자료 올릴게"   // 14:04',
-      '    );',
-      '',
-      '    새벽세시(',
-      '        "잠깐 나 할 말 있어",   // 14:15',
-      '        "질문 리스트',
-      '         1. 주제',
-      '         2. 역할",   // 14:16',
-      '        "ㅋㅋ"',
-      '    );',
-      '    // 감자 → 감자튀김',
-      '    // TODO: 새 메시지',
-      '    나(',
-      '        "ㅇㅋ"   // 14:18',
-      '    );',
-      '}',
+      'val 수행평가조 = chat(',
+      '    members = listOf(나, 고양이발, 새벽세시),',
+      '    messages = listOf(',
+      '        // 10월 14일 (수)',
+      '        message(고양이발, "발표 자료 올릴게", at(14, 4)),',
+      '        message(새벽세시, "잠깐 나 할 말 있어", at(14, 15)),',
+      r'        message(새벽세시, "질문 리스트\n1. 주제\n2. 역할", at(14, 16)),',
+      '        system("감자 → 감자튀김", at(14, 17)),',
+      '        // TODO: 새 메시지',
+      '        message(나, "ㅇㅋ", at(14, 18)),',
+      '    ),',
+      ')',
     ]);
+  });
+
+  test('따옴표, 역슬래시, 달러는 Kotlin 문자열처럼 이스케이프', () {
+    final lines = ConversationCode.build(
+      roomName: '방',
+      members: members,
+      messages: [message('1', 'cat', r'"$5" \ 끝', at(9, 0))],
+    );
+
+    final line = lines.firstWhere((line) => line.messageId == '1');
+    expect(line.text, r'        message(고양이발, "\"\$5\" \\ 끝", at(9, 0)),');
+    expect(
+      line.tokens
+          .where((token) => token.kind == CodeTokenKind.escape)
+          .map((token) => token.text),
+      [r'\"', r'\$', r'\"', r'\\'],
+    );
   });
 
   test('새 메시지 아래 줄만 변경 표시', () {
@@ -80,14 +90,8 @@ void main() {
       newMessagesAfter: at(9, 1),
     );
 
-    final markerIndex = lines.indexWhere(
-      (line) => line.text.contains('TODO: 새 메시지'),
-    );
-    expect(lines.take(markerIndex).any((line) => line.changed), isFalse);
-    expect(
-      lines.skip(markerIndex + 1).where((line) => line.messageId == '2'),
-      everyElement(predicate<dynamic>((line) => line.changed == true)),
-    );
+    expect(lines.firstWhere((line) => line.messageId == '1').changed, isFalse);
+    expect(lines.firstWhere((line) => line.messageId == '2').changed, isTrue);
   });
 
   test('비밀 구간은 비밀 표시가 붙은 조각으로 나옴', () {
