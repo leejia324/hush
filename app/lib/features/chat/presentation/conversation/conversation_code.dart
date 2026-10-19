@@ -135,15 +135,7 @@ abstract final class ConversationCode {
       for (final textLine in _splitLines(segments))
         line([
           const CodeToken(_rawIndent, CodeTokenKind.plain),
-          for (final segment in textLine)
-            CodeToken(
-              segment.text,
-              CodeTokenKind.string,
-              secret: segment.secret,
-              bold: segment.bold,
-              italic: segment.italic,
-              strike: segment.strike,
-            ),
+          for (final segment in textLine) ..._rawStringTokens(segment),
         ]),
       line([
         const CodeToken(_itemIndent, CodeTokenKind.plain),
@@ -175,6 +167,46 @@ abstract final class ConversationCode {
       }
     }
     return lines;
+  }
+
+  static Iterable<CodeToken> _rawStringTokens(MessageSegment segment) sync* {
+    CodeToken token(String text, CodeTokenKind kind) => CodeToken(
+      text,
+      kind,
+      secret: segment.secret,
+      bold: segment.bold,
+      italic: segment.italic,
+      strike: segment.strike,
+    );
+
+    final text = segment.text;
+    final buffer = StringBuffer();
+    var i = 0;
+    while (i < text.length) {
+      final String escaped;
+      final int consumed;
+      if (text.startsWith('"""', i)) {
+        buffer.write('""');
+        escaped = r"""${'"'}""";
+        consumed = 3;
+      } else if (text[i] == r'$') {
+        escaped = r"${'$'}";
+        consumed = 1;
+      } else {
+        buffer.write(text[i]);
+        i++;
+        continue;
+      }
+      if (buffer.isNotEmpty) {
+        yield token(buffer.toString(), CodeTokenKind.string);
+        buffer.clear();
+      }
+      yield token(escaped, CodeTokenKind.escape);
+      i += consumed;
+    }
+    if (buffer.isNotEmpty) {
+      yield token(buffer.toString(), CodeTokenKind.string);
+    }
   }
 
   static Iterable<CodeToken> _stringTokens(MessageSegment segment) sync* {

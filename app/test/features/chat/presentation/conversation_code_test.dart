@@ -102,6 +102,17 @@ void main() {
     );
   });
 
+  test('여러 줄 문자열 안의 달러와 따옴표 세 개는 Kotlin처럼 이스케이프', () {
+    final lines = ConversationCode.build(
+      roomName: '방',
+      members: members,
+      messages: [message('1', 'cat', 'a\n\$5 """끝', at(9, 0))],
+    );
+
+    final body = lines.where((line) => line.messageId == '1').elementAt(2);
+    expect(body.text, r"""            ${'$'}5 ""${'"'}끝""");
+  });
+
   test('새 메시지 아래 줄만 변경 표시', () {
     final lines = ConversationCode.build(
       roomName: '방',
