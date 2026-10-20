@@ -89,7 +89,7 @@ void main() {
 
     final shapes = [
       RegExp(r'\.run \{'),
-      RegExp(r'val \w+ = listOf\('),
+      RegExp(r'^        val \w+ = listOf\(', multiLine: true),
       RegExp(r'if \(.+\.isOnline\)'),
       RegExp(r'notes\["'),
       RegExp(r'check\('),
@@ -107,7 +107,7 @@ void main() {
 
     final shapes = [
       RegExp(r'\.run \{'),
-      RegExp(r'val \w+ = listOf\('),
+      RegExp(r'^        val \w+ = listOf\(', multiLine: true),
       RegExp(r'if \(.+\.isOnline\)'),
       RegExp(r'notes\["'),
       RegExp(r'check\('),
@@ -146,6 +146,19 @@ void main() {
     expect(texts(lines), contains('        // TODO: 새 메시지'));
     expect(lines.firstWhere((line) => line.messageId == '1').changed, isFalse);
     expect(lines.firstWhere((line) => line.messageId == '2').changed, isTrue);
+  });
+
+  test('새 메시지가 여러 날짜에 걸쳐도 새 메시지 표시는 한 번만', () {
+    final lines = build([
+      message('1', 'cat', 'a', at(9, 0)),
+      message('2', 'me', 'b', at(9, 5)),
+      message('3', 'cat', 'c', at(10, 0, day: 15)),
+    ], newMessagesAfter: at(9, 1));
+
+    expect(
+      texts(lines).where((text) => text.contains('TODO: 새 메시지')),
+      hasLength(1),
+    );
   });
 
   test('여러 줄 메시지는 """ 문자열로, 모든 줄이 같은 메시지로 묶임', () {
