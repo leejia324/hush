@@ -10,6 +10,7 @@ import 'features/chat/data/fake_chat_repository.dart';
 import 'features/chat/domain/chat_repository.dart';
 import 'features/chat/presentation/chat_page.dart';
 import 'features/lock/data/local_authenticator.dart';
+import 'features/lock/presentation/idle_lock.dart';
 import 'features/lock/presentation/lock_cubit.dart';
 import 'features/lock/presentation/lock_gate.dart';
 import 'features/settings/data/local_settings_repository.dart';
@@ -78,8 +79,9 @@ class HushApp extends StatelessWidget {
             theme: IdeTheme.light(),
             darkTheme: IdeTheme.dark(),
             themeMode: theme.themeMode,
-            builder: (context, child) =>
-                LockGate(unlockOnStart: unlockOnStart, child: child!),
+            builder: (context, child) => IdleLock(
+              child: LockGate(unlockOnStart: unlockOnStart, child: child!),
+            ),
             home: const ChatPage(),
           ),
         ),
