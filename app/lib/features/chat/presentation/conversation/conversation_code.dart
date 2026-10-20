@@ -91,6 +91,7 @@ abstract final class ConversationCode {
           ], changed: changed),
         );
 
+      final usedNames = <String, int>{};
       final items = _groupTurns(
         day.messages,
         markerPlaced ? null : newMessagesAfter,
@@ -123,7 +124,9 @@ abstract final class ConversationCode {
                 0,
                 recentShapes.length > 2 ? recentShapes.length - 2 : 0,
               );
-            lines.addAll(_turn(shape, sender(nicknames), messages, changed));
+            lines.addAll(
+              _turn(shape, sender(nicknames), messages, changed, usedNames),
+            );
           case _Marker():
             break;
         }
@@ -155,6 +158,7 @@ abstract final class ConversationCode {
     String sender,
     List<Message> messages,
     bool changed,
+    Map<String, int> usedNames,
   ) {
     CodeLine line(List<CodeToken> tokens) => CodeLine(tokens, changed: changed);
 
@@ -169,7 +173,6 @@ abstract final class ConversationCode {
 
     switch (shape) {
       case TurnShape.declaration:
-        final used = <String, int>{};
         return [
           for (final message in messages)
             ..._literal(
@@ -178,7 +181,7 @@ abstract final class ConversationCode {
               before: [
                 const CodeToken('val', CodeTokenKind.keyword),
                 CodeToken(
-                  ' ${_uniqueName('$sender${_hhmm(message.sentAt)}', used)} = ',
+                  ' ${_uniqueName('$sender${_hhmm(message.sentAt)}', usedNames)} = ',
                   CodeTokenKind.plain,
                 ),
               ],
@@ -215,9 +218,7 @@ abstract final class ConversationCode {
           ]),
         ];
       case TurnShape.list:
-        final name =
-            _listNames[_stableHash('${messages.first.id}name') %
-                _listNames.length];
+        final name = _listName(messages.first.id, usedNames);
         return [
           line([
             const CodeToken(_body, CodeTokenKind.plain),
@@ -539,6 +540,18 @@ abstract final class ConversationCode {
     if (buffer.isNotEmpty) {
       yield token(buffer.toString(), CodeTokenKind.string);
     }
+  }
+
+  static String _listName(String messageId, Map<String, int> used) {
+    final start = _stableHash('${messageId}name') % _listNames.length;
+    for (var i = 0; i < _listNames.length; i++) {
+      final name = _listNames[(start + i) % _listNames.length];
+      if (!used.containsKey(name)) {
+        used[name] = 1;
+        return name;
+      }
+    }
+    return _uniqueName(_listNames[start], used);
   }
 
   static String _uniqueName(String base, Map<String, int> used) {

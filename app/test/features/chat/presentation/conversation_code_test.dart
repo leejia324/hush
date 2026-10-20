@@ -117,6 +117,20 @@ void main() {
     expect(shapes.length, greaterThanOrEqualTo(3));
   });
 
+  test('같은 날짜 안에서 변수 이름이 겹치지 않음', () {
+    final lines = build([
+      for (var i = 0; i < 40; i++)
+        message('$i', i % 3 == 0 ? 'dawn' : 'cat', '메시지 $i', at(10, 0)),
+    ]);
+
+    final names = [
+      for (final text in texts(lines))
+        if (RegExp(r'^        val (\S+) = ').firstMatch(text) case final match?)
+          match.group(1),
+    ];
+    expect(names.toSet(), hasLength(names.length));
+  });
+
   test('같은 대화는 항상 같은 코드로 바뀜', () {
     List<Message> conversation() => [
       for (var i = 0; i < 10; i++)
