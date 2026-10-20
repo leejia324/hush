@@ -10,8 +10,10 @@ import 'package:hush/features/chat/presentation/widgets/panel_resize_handle.dart
 import 'package:hush/features/chat/presentation/widgets/project_panel.dart';
 import 'package:hush/features/chat/presentation/widgets/terminal_composer.dart';
 import 'package:hush/features/settings/domain/theme_preference.dart';
+import 'package:hush/features/lock/presentation/lock_cubit.dart';
 import 'package:hush/main.dart';
 
+import 'support/fake_authenticator.dart';
 import 'support/memory_settings_repository.dart';
 
 void main() {
@@ -27,6 +29,8 @@ void main() {
       HushApp(
         repository: FakeChatRepository(now: () => DateTime(2026, 10, 14, 15)),
         settingsRepository: settings,
+        lockCubit: LockCubit(FakeAuthenticator(), locked: false),
+        unlockOnStart: false,
       ),
     );
     await tester.pumpAndSettle();

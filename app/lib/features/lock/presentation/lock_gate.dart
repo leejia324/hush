@@ -1,0 +1,92 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../../core/platform/screen_cover.dart';
+import '../../../core/theme/ide_colors.dart';
+import 'lock_cubit.dart';
+
+class LockGate extends StatefulWidget {
+  const LockGate({super.key, required this.child, this.unlockOnStart = true});
+
+  final Widget child;
+  final bool unlockOnStart;
+
+  @override
+  State<LockGate> createState() => _LockGateState();
+}
+
+class _LockGateState extends State<LockGate> {
+  @override
+  void initState() {
+    super.initState();
+    if (widget.unlockOnStart) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) context.read<LockCubit>().unlock();
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<LockCubit, LockStatus>(
+      builder: (context, status) {
+        final locked = status != LockStatus.unlocked;
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            ExcludeFocus(
+              excluding: locked,
+              child: Visibility(
+                visible: !locked,
+                maintainState: true,
+                child: widget.child,
+              ),
+            ),
+            if (locked) LockScreen(unlocking: status == LockStatus.unlocking),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class LockScreen extends StatelessWidget {
+  const LockScreen({super.key, required this.unlocking});
+
+  final bool unlocking;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = IdeColors.of(context);
+    return Focus(
+      autofocus: true,
+      onKeyEvent: (_, event) {
+        if (event is KeyDownEvent &&
+            event.logicalKey == LogicalKeyboardKey.enter) {
+          context.read<LockCubit>().unlock();
+          return KeyEventResult.handled;
+        }
+        return KeyEventResult.ignored;
+      },
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          const ScreenCover(),
+          Positioned(
+            right: 12,
+            bottom: 8,
+            child: IconButton(
+              onPressed: unlocking ? null : context.read<LockCubit>().unlock,
+              tooltip: '잠금 해제 (Enter)',
+              iconSize: 16,
+              color: colors.comment,
+              disabledColor: colors.lineNumber,
+              icon: const Icon(Icons.lock_outline),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

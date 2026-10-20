@@ -9,6 +9,9 @@ import 'core/theme/ide_theme.dart';
 import 'features/chat/data/fake_chat_repository.dart';
 import 'features/chat/domain/chat_repository.dart';
 import 'features/chat/presentation/chat_page.dart';
+import 'features/lock/data/local_authenticator.dart';
+import 'features/lock/presentation/lock_cubit.dart';
+import 'features/lock/presentation/lock_gate.dart';
 import 'features/settings/data/local_settings_repository.dart';
 import 'features/settings/domain/settings_repository.dart';
 import 'features/settings/domain/theme_preference.dart';
@@ -21,10 +24,12 @@ Future<void> main() async {
   LicenseRegistry.addLicense(_fontLicenses);
 
   final settings = LocalSettingsRepository();
+  final lock = LockCubit(LocalAuthenticator());
   runApp(
     HushApp(
       repository: FakeChatRepository(),
       settingsRepository: settings,
+      lockCubit: lock,
       initialTheme: await settings.loadTheme(),
     ),
   );
@@ -40,12 +45,16 @@ class HushApp extends StatelessWidget {
     super.key,
     required this.repository,
     required this.settingsRepository,
+    required this.lockCubit,
     this.initialTheme = ThemePreference.system,
+    this.unlockOnStart = true,
   });
 
   final ChatRepository repository;
   final SettingsRepository settingsRepository;
   final ThemePreference initialTheme;
+  final LockCubit lockCubit;
+  final bool unlockOnStart;
 
   @override
   Widget build(BuildContext context) {
@@ -54,8 +63,14 @@ class HushApp extends StatelessWidget {
         RepositoryProvider.value(value: repository),
         RepositoryProvider.value(value: settingsRepository),
       ],
-      child: BlocProvider(
-        create: (_) => ThemeCubit(settingsRepository, initial: initialTheme),
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create: (_) =>
+                ThemeCubit(settingsRepository, initial: initialTheme),
+          ),
+          BlocProvider.value(value: lockCubit),
+        ],
         child: BlocBuilder<ThemeCubit, ThemePreference>(
           builder: (context, theme) => MaterialApp(
             title: 'hush',
@@ -63,6 +78,8 @@ class HushApp extends StatelessWidget {
             theme: IdeTheme.light(),
             darkTheme: IdeTheme.dark(),
             themeMode: theme.themeMode,
+            builder: (context, child) =>
+                LockGate(unlockOnStart: unlockOnStart, child: child!),
             home: const ChatPage(),
           ),
         ),
