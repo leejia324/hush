@@ -42,13 +42,9 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('내 스크린샷을 골라 확인하면 잠금 화면 이미지로 저장', (tester) async {
+  testWidgets('이미지를 골라 확인하면 잠금 화면 이미지로 저장', (tester) async {
     await pumpDialog(tester);
 
-    await tester.tap(find.text('기본 코드 화면'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('내 스크린샷').last);
-    await tester.pumpAndSettle();
     await tester.tap(find.text('이미지 선택…'));
     await tester.pumpAndSettle();
 
@@ -61,16 +57,14 @@ void main() {
     expect(settings.lockImagePath, '/tmp/my_ide.png');
   });
 
-  testWidgets('기본 코드 화면으로 바꾸고 확인하면 이미지 지움', (tester) async {
+  testWidgets('이미지를 고르고 취소하면 저장 안 함', (tester) async {
     await pumpDialog(tester, initialImage: '/tmp/old.png');
 
-    await tester.tap(find.text('내 스크린샷'));
+    await tester.tap(find.text('이미지 선택…'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('기본 코드 화면').last);
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('확인'));
+    await tester.tap(find.text('취소'));
     await tester.pumpAndSettle();
 
-    expect(lockImage.state, isNull);
+    expect(lockImage.state, '/tmp/old.png');
   });
 }

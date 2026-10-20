@@ -14,7 +14,7 @@ class LocalLockImageStore implements LockImageStore {
 
   @override
   Future<String> save(String sourcePath) async {
-    await clear();
+    await _clear();
     final directory = await _directory();
     final extension = sourcePath.contains('.')
         ? sourcePath.substring(sourcePath.lastIndexOf('.'))
@@ -26,8 +26,7 @@ class LocalLockImageStore implements LockImageStore {
     return target.path;
   }
 
-  @override
-  Future<void> clear() async {
+  Future<void> _clear() async {
     final directory = await _directory();
     if (!await directory.exists()) return;
     await for (final entity in directory.list()) {

@@ -54,17 +54,10 @@ class _SettingsDialogState extends State<SettingsDialog> {
   ThemePreference get _pending =>
       _syncWithOs ? ThemePreference.system : _manual;
 
-  late bool _useScreenshot;
   String? _pickedPath;
 
-  bool get _lockImageChanged {
-    final current = context.read<LockImageCubit>().state;
-    if (!_useScreenshot) return current != null;
-    return _pickedPath != null;
-  }
-
   bool get _changed =>
-      _pending != context.read<ThemeCubit>().state || _lockImageChanged;
+      _pending != context.read<ThemeCubit>().state || _pickedPath != null;
 
   var _initialized = false;
 
@@ -73,7 +66,6 @@ class _SettingsDialogState extends State<SettingsDialog> {
     super.didChangeDependencies();
     if (_initialized) return;
     _initialized = true;
-    _useScreenshot = context.read<LockImageCubit>().state != null;
     final current = context.read<ThemeCubit>().state;
     _syncWithOs = current == ThemePreference.system;
     _manual = switch (current) {
@@ -88,9 +80,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
   Future<void> _apply() async {
     final lockImage = context.read<LockImageCubit>();
     await context.read<ThemeCubit>().select(_pending);
-    if (!_useScreenshot) {
-      await lockImage.useDefault();
-    } else if (_pickedPath case final picked?) {
+    if (_pickedPath case final picked?) {
       await lockImage.use(picked);
       _pickedPath = null;
     }
@@ -145,11 +135,8 @@ class _SettingsDialogState extends State<SettingsDialog> {
                           setState(() => _syncWithOs = value),
                       onManualChanged: (value) =>
                           setState(() => _manual = value),
-                      useScreenshot: _useScreenshot,
                       previewPath:
                           _pickedPath ?? context.watch<LockImageCubit>().state,
-                      onUseScreenshotChanged: (value) =>
-                          setState(() => _useScreenshot = value),
                       onPick: _pick,
                     ),
                   ),
@@ -293,9 +280,7 @@ class _AppearancePage extends StatelessWidget {
     required this.manual,
     required this.onSyncChanged,
     required this.onManualChanged,
-    required this.useScreenshot,
     required this.previewPath,
-    required this.onUseScreenshotChanged,
     required this.onPick,
   });
 
@@ -304,9 +289,7 @@ class _AppearancePage extends StatelessWidget {
   final ThemePreference manual;
   final ValueChanged<bool> onSyncChanged;
   final ValueChanged<ThemePreference> onManualChanged;
-  final bool useScreenshot;
   final String? previewPath;
-  final ValueChanged<bool> onUseScreenshotChanged;
   final VoidCallback onPick;
 
   @override
@@ -348,45 +331,31 @@ class _AppearancePage extends StatelessWidget {
           Row(
             children: [
               SizedBox(width: 72, child: Text('잠금 화면:', style: style)),
-              IdeComboBox<bool>(
-                value: useScreenshot,
-                items: const [false, true],
-                labelOf: (screenshot) => screenshot ? '내 스크린샷' : '기본 코드 화면',
-                onChanged: onUseScreenshotChanged,
-              ),
-              if (useScreenshot) ...[
-                const SizedBox(width: 12),
-                IdeButton(label: '이미지 선택…', onPressed: onPick),
-              ],
+              IdeButton(label: '이미지 선택…', onPressed: onPick),
             ],
           ),
-          if (useScreenshot) ...[
-            const SizedBox(height: 12),
-            Padding(
-              padding: const EdgeInsets.only(left: 72),
-              child: previewPath == null
-                  ? Text(
-                      '실제 IDE 화면을 찍어서 넣으면 잠겼을 때 그대로 보임',
-                      style: style.copyWith(
-                        fontSize: 12,
-                        color: colors.comment,
-                      ),
-                    )
-                  : ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: Image.file(
-                        File(previewPath!),
-                        width: 192,
-                        height: 120,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, _, _) => Text(
-                          '이미지를 읽을 수 없음',
-                          style: style.copyWith(color: colors.comment),
-                        ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.only(left: 72),
+            child: previewPath == null
+                ? Text(
+                    '실제 IDE 화면을 찍어서 넣으면 잠겼을 때 그대로 보임',
+                    style: style.copyWith(fontSize: 12, color: colors.comment),
+                  )
+                : ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: Image.file(
+                      File(previewPath!),
+                      width: 192,
+                      height: 120,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) => Text(
+                        '이미지를 읽을 수 없음',
+                        style: style.copyWith(color: colors.comment),
                       ),
                     ),
-            ),
-          ],
+                  ),
+          ),
         ],
       ),
     );

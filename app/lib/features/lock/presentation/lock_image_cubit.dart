@@ -15,11 +15,4 @@ class LockImageCubit extends Cubit<String?> {
     await _settings.saveLockImagePath(saved);
     if (!isClosed) emit(saved);
   }
-
-  Future<void> useDefault() async {
-    if (state == null) return;
-    await _store.clear();
-    await _settings.saveLockImagePath(null);
-    if (!isClosed) emit(null);
-  }
 }

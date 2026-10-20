@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hush/core/theme/ide_theme.dart';
-import 'package:hush/features/lock/presentation/disguise_screen.dart';
 import 'package:hush/features/lock/presentation/lock_cubit.dart';
 import 'package:hush/features/lock/presentation/lock_gate.dart';
 import 'package:hush/features/lock/presentation/lock_image_cubit.dart';
@@ -46,10 +45,11 @@ void main() {
     return cubit;
   }
 
-  testWidgets('잠겨 있으면 위장 코드만 보이고 대화는 안 보임', (tester) async {
+  testWidgets('잠겨 있으면 대화는 안 보이고, 이미지가 없으면 빈 화면', (tester) async {
     await pumpGate(tester, FakeAuthenticator(result: false));
 
-    expect(find.byType(DisguiseScreen), findsOneWidget);
+    expect(find.byType(LockScreen), findsOneWidget);
+    expect(find.byType(Image), findsNothing);
     expect(find.text('대화 화면'), findsNothing);
   });
 
@@ -59,7 +59,7 @@ void main() {
     await tester.tap(find.byTooltip('잠금 해제 (Enter)'));
     await tester.pumpAndSettle();
 
-    expect(find.byType(DisguiseScreen), findsNothing);
+    expect(find.byType(LockScreen), findsNothing);
     expect(find.text('대화 화면'), findsOneWidget);
   });
 
@@ -80,7 +80,7 @@ void main() {
     await tester.tap(find.byTooltip('잠금 해제 (Enter)'));
     await tester.pumpAndSettle();
 
-    expect(find.byType(DisguiseScreen), findsOneWidget);
+    expect(find.byType(LockScreen), findsOneWidget);
   });
 
   testWidgets('앱을 켜면 바로 인증 창이 한 번 뜸', (tester) async {
@@ -101,6 +101,5 @@ void main() {
     final image = tester.widget<Image>(find.byType(Image));
     expect((image.image as FileImage).file.path, '/tmp/my_ide.png');
     expect(image.fit, BoxFit.cover);
-    expect(find.byType(DisguiseScreen), findsNothing);
   });
 }

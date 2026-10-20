@@ -9,7 +9,6 @@ import 'package:hush/features/chat/presentation/widgets/panel_resize_handle.dart
 import 'package:hush/features/chat/presentation/widgets/project_panel.dart';
 import 'package:hush/features/chat/presentation/widgets/terminal_composer.dart';
 import 'package:hush/features/settings/domain/theme_preference.dart';
-import 'package:hush/features/lock/presentation/disguise_screen.dart';
 import 'package:hush/features/lock/presentation/lock_cubit.dart';
 import 'package:hush/features/lock/presentation/lock_gate.dart';
 import 'package:hush/main.dart';
@@ -55,7 +54,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
-    expect(find.byType(DisguiseScreen), findsOneWidget);
+    expect(find.byType(LockScreen), findsOneWidget);
   });
 
   testWidgets('잠긴 상태에서 Enter를 누르면 다시 인증 창이 뜸', (tester) async {

@@ -44,21 +44,15 @@ void main() {
     expect(File(second).existsSync(), isTrue);
   });
 
-  test('이미지를 고르면 저장하고, 기본으로 바꾸면 지움', () async {
+  test('이미지를 고르면 복사본 경로를 설정에 저장', () async {
     final settings = MemorySettingsRepository();
     final cubit = LockImageCubit(settings, store);
     addTearDown(cubit.close);
 
     await cubit.use((await picked('shot_d.png')).path);
-    final saved = cubit.state;
 
-    expect(saved, isNotNull);
-    expect(settings.lockImagePath, saved);
-
-    await cubit.useDefault();
-
-    expect(cubit.state, isNull);
-    expect(settings.lockImagePath, isNull);
-    expect(File(saved!).existsSync(), isFalse);
+    expect(cubit.state, isNotNull);
+    expect(settings.lockImagePath, cubit.state);
+    expect(File(cubit.state!).existsSync(), isTrue);
   });
 }
