@@ -66,6 +66,7 @@ abstract final class ConversationCode {
     ];
 
     var changed = false;
+    var markerPlaced = false;
     final recentShapes = <TurnShape>[];
 
     for (final day in _groupByDay(messages)) {
@@ -90,7 +91,11 @@ abstract final class ConversationCode {
           ], changed: changed),
         );
 
-      final items = _groupTurns(day.messages, newMessagesAfter);
+      final items = _groupTurns(
+        day.messages,
+        markerPlaced ? null : newMessagesAfter,
+      );
+      if (items.any((item) => item is _Marker)) markerPlaced = true;
       for (var i = 0; i < items.length; i++) {
         final item = items[i];
         if (item is _Marker) {
