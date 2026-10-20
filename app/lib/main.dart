@@ -10,9 +10,12 @@ import 'features/chat/data/fake_chat_repository.dart';
 import 'features/chat/domain/chat_repository.dart';
 import 'features/chat/presentation/chat_page.dart';
 import 'features/lock/data/local_authenticator.dart';
+import 'features/lock/data/local_lock_image_store.dart';
+import 'features/lock/domain/lock_image_store.dart';
 import 'features/lock/presentation/idle_lock.dart';
 import 'features/lock/presentation/lock_cubit.dart';
 import 'features/lock/presentation/lock_gate.dart';
+import 'features/lock/presentation/lock_image_cubit.dart';
 import 'features/settings/data/local_settings_repository.dart';
 import 'features/settings/domain/settings_repository.dart';
 import 'features/settings/domain/theme_preference.dart';
@@ -39,6 +42,7 @@ Future<void> main() async {
       settingsRepository: settings,
       lockCubit: lock,
       initialTheme: await settings.loadTheme(),
+      initialLockImagePath: await settings.loadLockImagePath(),
     ),
   );
 }
@@ -56,6 +60,8 @@ class HushApp extends StatelessWidget {
     required this.lockCubit,
     this.initialTheme = ThemePreference.system,
     this.unlockOnStart = true,
+    this.initialLockImagePath,
+    this.lockImageStore,
   });
 
   final ChatRepository repository;
@@ -63,6 +69,8 @@ class HushApp extends StatelessWidget {
   final ThemePreference initialTheme;
   final LockCubit lockCubit;
   final bool unlockOnStart;
+  final String? initialLockImagePath;
+  final LockImageStore? lockImageStore;
 
   @override
   Widget build(BuildContext context) {
@@ -78,6 +86,13 @@ class HushApp extends StatelessWidget {
                 ThemeCubit(settingsRepository, initial: initialTheme),
           ),
           BlocProvider.value(value: lockCubit),
+          BlocProvider(
+            create: (_) => LockImageCubit(
+              settingsRepository,
+              lockImageStore ?? LocalLockImageStore(),
+              initial: initialLockImagePath,
+            ),
+          ),
         ],
         child: BlocBuilder<ThemeCubit, ThemePreference>(
           builder: (context, theme) => MaterialApp(

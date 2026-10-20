@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -5,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/theme/ide_colors.dart';
 import 'disguise_screen.dart';
 import 'lock_cubit.dart';
+import 'lock_image_cubit.dart';
 
 class LockGate extends StatefulWidget {
   const LockGate({super.key, required this.child, this.unlockOnStart = true});
@@ -88,7 +91,15 @@ class LockScreen extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          const DisguiseScreen(),
+          BlocBuilder<LockImageCubit, String?>(
+            builder: (context, path) => path == null
+                ? const DisguiseScreen()
+                : Image.file(
+                    File(path),
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, _, _) => const DisguiseScreen(),
+                  ),
+          ),
           Positioned(
             right: 12,
             bottom: 8,
