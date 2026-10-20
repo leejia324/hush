@@ -8,6 +8,7 @@ class LocalSettingsRepository implements SettingsRepository {
     : _preferences = preferences ?? SharedPreferencesAsync();
 
   static const _themeKey = 'theme';
+  static const _lockImageKey = 'lockImagePath';
 
   final SharedPreferencesAsync _preferences;
 
@@ -27,4 +28,18 @@ class LocalSettingsRepository implements SettingsRepository {
   @override
   Future<void> saveTheme(ThemePreference theme) =>
       _preferences.setString(_themeKey, theme.name);
+
+  @override
+  Future<String?> loadLockImagePath() async {
+    try {
+      return await _preferences.getString(_lockImageKey);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  @override
+  Future<void> saveLockImagePath(String? path) => path == null
+      ? _preferences.remove(_lockImageKey)
+      : _preferences.setString(_lockImageKey, path);
 }
