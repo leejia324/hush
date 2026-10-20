@@ -54,6 +54,28 @@ void main() {
     expect(find.byType(ScreenCover), findsOneWidget);
   });
 
+  testWidgets('잠긴 상태에서 Enter를 누르면 다시 인증 창이 뜸', (tester) async {
+    tester.view.physicalSize = const Size(1400, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final authenticator = FakeAuthenticator(result: false);
+
+    await tester.pumpWidget(
+      HushApp(
+        repository: FakeChatRepository(now: () => DateTime(2026, 10, 14, 15)),
+        settingsRepository: MemorySettingsRepository(),
+        lockCubit: LockCubit(authenticator),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(authenticator.calls, 1);
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.pumpAndSettle();
+
+    expect(authenticator.calls, 2);
+  });
+
   testWidgets('첫 방의 대화를 코드 형식으로 보여 줌', (tester) async {
     await pumpApp(tester);
 

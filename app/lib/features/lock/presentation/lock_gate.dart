@@ -20,11 +20,29 @@ class _LockGateState extends State<LockGate> {
   @override
   void initState() {
     super.initState();
+    HardwareKeyboard.instance.addHandler(_onKey);
     if (widget.unlockOnStart) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) context.read<LockCubit>().unlock();
       });
     }
+  }
+
+  @override
+  void dispose() {
+    HardwareKeyboard.instance.removeHandler(_onKey);
+    super.dispose();
+  }
+
+  bool _onKey(KeyEvent event) {
+    final lock = context.read<LockCubit>();
+    if (!lock.isLocked) return false;
+    if (event is KeyDownEvent &&
+        (event.logicalKey == LogicalKeyboardKey.enter ||
+            event.logicalKey == LogicalKeyboardKey.numpadEnter)) {
+      lock.unlock();
+    }
+    return true;
   }
 
   @override
@@ -67,34 +85,23 @@ class LockScreen extends StatelessWidget {
     final colors = IdeColors.of(context);
     return Material(
       type: MaterialType.transparency,
-      child: Focus(
-        autofocus: true,
-        onKeyEvent: (_, event) {
-          if (event is KeyDownEvent &&
-              event.logicalKey == LogicalKeyboardKey.enter) {
-            context.read<LockCubit>().unlock();
-            return KeyEventResult.handled;
-          }
-          return KeyEventResult.ignored;
-        },
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            const ScreenCover(),
-            Positioned(
-              right: 12,
-              bottom: 8,
-              child: IconButton(
-                onPressed: unlocking ? null : context.read<LockCubit>().unlock,
-                tooltip: '잠금 해제 (Enter)',
-                iconSize: 16,
-                color: colors.comment,
-                disabledColor: colors.lineNumber,
-                icon: const Icon(Icons.lock_outline),
-              ),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          const ScreenCover(),
+          Positioned(
+            right: 12,
+            bottom: 8,
+            child: IconButton(
+              onPressed: unlocking ? null : context.read<LockCubit>().unlock,
+              tooltip: '잠금 해제 (Enter)',
+              iconSize: 16,
+              color: colors.comment,
+              disabledColor: colors.lineNumber,
+              icon: const Icon(Icons.lock_outline),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
