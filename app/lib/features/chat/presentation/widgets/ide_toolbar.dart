@@ -5,13 +5,9 @@ import '../../../../core/theme/ide_theme.dart';
 import 'file_tree_icon.dart';
 
 class IdeToolbar extends StatelessWidget {
-  const IdeToolbar({
-    super.key,
-    required this.onCover,
-    required this.onSettings,
-  });
+  const IdeToolbar({super.key, required this.onLock, required this.onSettings});
 
-  final VoidCallback onCover;
+  final VoidCallback onLock;
   final VoidCallback onSettings;
 
   @override
@@ -135,9 +131,9 @@ class IdeToolbar extends StatelessWidget {
                 ),
               ],
               _ToolbarButton(
-                icon: Icons.visibility_off_outlined,
-                tooltip: '화면 가리기 ⌥Space',
-                onPressed: onCover,
+                icon: Icons.lock_outline,
+                tooltip: '지금 잠그기 ⌥Space',
+                onPressed: onLock,
               ),
               if (showExtras)
                 _ToolbarButton(

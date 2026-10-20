@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../core/platform/screen_cover.dart';
 import '../../../core/theme/ide_colors.dart';
 import '../../../core/theme/ide_theme.dart';
+import '../../lock/presentation/lock_cubit.dart';
 import '../../settings/presentation/settings_dialog.dart';
 import '../domain/chat_repository.dart';
 import 'bloc/chat_cubit.dart';
@@ -25,24 +25,7 @@ class ChatPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => ChatCubit(context.read<ChatRepository>())..load(),
-      child: ValueListenableBuilder(
-        valueListenable: screenCovered,
-        builder: (context, covered, child) => Stack(
-          fit: StackFit.expand,
-          children: [
-            ExcludeFocus(
-              excluding: covered,
-              child: Visibility(
-                visible: !covered,
-                maintainState: true,
-                child: child!,
-              ),
-            ),
-            if (covered) const ScreenCover(),
-          ],
-        ),
-        child: const _IdeLayout(),
-      ),
+      child: const _IdeLayout(),
     );
   }
 }
@@ -133,7 +116,7 @@ class _IdeLayoutState extends State<_IdeLayout> {
             return Column(
               children: [
                 IdeToolbar(
-                  onCover: () => screenCovered.value = true,
+                  onLock: context.read<LockCubit>().lock,
                   onSettings: () => SettingsDialog.show(context),
                 ),
                 Expanded(

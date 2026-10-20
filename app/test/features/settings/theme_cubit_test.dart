@@ -12,6 +12,12 @@ class _FailingSettingsRepository implements SettingsRepository {
   @override
   Future<void> saveTheme(ThemePreference theme) async =>
       throw Exception('disk');
+
+  @override
+  Future<String?> loadLockImagePath() async => null;
+
+  @override
+  Future<void> saveLockImagePath(String? path) async {}
 }
 
 void main() {

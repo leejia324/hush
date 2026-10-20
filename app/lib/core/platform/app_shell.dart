@@ -1,41 +1,86 @@
+import 'dart:async';
 import 'dart:ui';
 
 import 'package:tray_manager/tray_manager.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'global_hotkey.dart';
-import 'screen_cover.dart';
 
 class AppShell with WindowListener {
   TrayIcon? _trayIcon;
-  Menu? _menu;
+  Menu? _unlockedMenu;
+  Menu? _lockedMenu;
+  void Function()? _onLock;
+  Future<void> Function()? _onUnlock;
+  StreamSubscription<bool>? _lockSubscription;
+  var _locked = true;
 
   Future<void> start() async {
     await windowManager.setPreventClose(true);
     await windowManager.setMinimumSize(const Size(800, 560));
     windowManager.addListener(this);
     _createTrayIcon();
-    coverHotKeyRegistered.value = await const GlobalHotKey()
-        .registerOptionSpace(
-          onPressed: () => screenCovered.value = !screenCovered.value,
-        );
+    await const GlobalHotKey().registerOptionSpace(onPressed: _onHotKey);
   }
 
   void _createTrayIcon() {
-    final menu = Menu.create()!
+    final unlockedMenu = Menu.create()!
       ..addItem(_menuItem('열기', _showWindow))
+      ..addItem(_menuItem('지금 잠그기', () async => _onLock?.call()))
+      ..addSeparator()
+      ..addItem(_menuItem('종료', _quit));
+    final lockedMenu = Menu.create()!
+      ..addItem(_menuItem('잠금 해제', _unlock))
       ..addSeparator()
       ..addItem(_menuItem('종료', _quit));
 
     final trayIcon = TrayIcon.create()!
       ..setTitle('{ }')
       ..setTooltip('hush')
-      ..setContextMenu(menu)
-      ..setContextMenuTrigger(ContextMenuTrigger.clicked)
+      ..setContextMenu(lockedMenu)
       ..setVisible(true);
+    trayIcon.addListener((event) {
+      if (event is TrayIconClickedEvent || event is TrayIconRightClickedEvent) {
+        trayIcon.openContextMenu();
+      }
+    });
 
-    _menu = menu;
+    _unlockedMenu = unlockedMenu;
+    _lockedMenu = lockedMenu;
     _trayIcon = trayIcon;
+  }
+
+  void bindLock({
+    required bool locked,
+    required Stream<bool> lockedChanges,
+    required void Function() onLock,
+    required Future<void> Function() onUnlock,
+  }) {
+    _onLock = onLock;
+    _onUnlock = onUnlock;
+    _showMenuFor(locked: locked);
+    _lockSubscription?.cancel();
+    _lockSubscription = lockedChanges.listen(
+      (locked) => _showMenuFor(locked: locked),
+    );
+  }
+
+  void _onHotKey() {
+    if (_locked) {
+      _unlock();
+    } else {
+      _onLock?.call();
+    }
+  }
+
+  void _showMenuFor({required bool locked}) {
+    _locked = locked;
+    _trayIcon?.setContextMenu(locked ? _lockedMenu : _unlockedMenu);
+  }
+
+  Future<void> _unlock() async {
+    await _showWindow();
+    await _onUnlock?.call();
   }
 
   MenuItem _menuItem(String label, Future<void> Function() onClick) {
@@ -54,8 +99,10 @@ class AppShell with WindowListener {
   }
 
   Future<void> _quit() async {
+    await _lockSubscription?.cancel();
     _trayIcon?.dispose();
-    _menu?.dispose();
+    _unlockedMenu?.dispose();
+    _lockedMenu?.dispose();
     await windowManager.setPreventClose(false);
     await windowManager.destroy();
   }
