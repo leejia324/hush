@@ -11,7 +11,8 @@ void main() {
     Member(id: 'dawn', nickname: '새벽세시', colorIndex: 2),
   ];
 
-  DateTime at(int hour, int minute) => DateTime(2026, 10, 14, hour, minute);
+  DateTime at(int hour, int minute, {int day = 14}) =>
+      DateTime(2026, 10, day, hour, minute);
 
   Message message(
     String id,
@@ -28,70 +29,159 @@ void main() {
     isSystem: isSystem,
   );
 
-  test('대화를 함수 호출 코드로 바꾸고 여러 줄 메시지는 """ 문자열로', () {
-    final lines = ConversationCode.build(
-      roomName: '수행평가조',
-      members: members,
-      messages: [
-        message('1', 'cat', '발표 자료 올릴게', at(14, 4)),
-        message('2', 'dawn', '잠깐 나 할 말 있어', at(14, 15)),
-        message('3', 'dawn', '질문 리스트\n1. 주제\n2. 역할', at(14, 16)),
-        message('4', 'cat', '감자 → 감자튀김', at(14, 17), isSystem: true),
-        message('5', 'me', 'ㅇㅋ', at(14, 18)),
-      ],
-      newMessagesAfter: at(14, 17),
-    );
+  List<CodeLine> build(List<Message> messages, {DateTime? newMessagesAfter}) =>
+      ConversationCode.build(
+        roomName: '수행평가조',
+        members: members,
+        messages: messages,
+        newMessagesAfter: newMessagesAfter,
+      );
 
-    expect(lines.map((line) => line.text).toList(), [
+  List<String> texts(List<CodeLine> lines) =>
+      lines.map((line) => line.text).toList();
+
+  test('방은 클래스, 날짜는 함수로 감쌈', () {
+    final lines = build([
+      message('1', 'cat', '안녕', at(9, 0)),
+      message('2', 'cat', '내일 봐', at(9, 0, day: 15)),
+    ]);
+
+    expect(texts(lines).take(7), [
       'package notes.rooms',
       '',
       'import notes.core.*',
       '',
-      'val 수행평가조 = chat(',
-      '    members = listOf(나, 고양이발, 새벽세시),',
-      '    messages = listOf(',
-      '        // 10월 14일 (수)',
-      '        message(고양이발, "발표 자료 올릴게", at(14, 4)),',
-      '        message(새벽세시, "잠깐 나 할 말 있어", at(14, 15)),',
-      '        message(새벽세시, """',
-      '            질문 리스트',
-      '            1. 주제',
-      '            2. 역할',
-      '        """.trimIndent(), at(14, 16)),',
-      '        system("감자 → 감자튀김", at(14, 17)),',
-      '        // TODO: 새 메시지',
-      '        message(나, "ㅇㅋ", at(14, 18)),',
-      '    ),',
-      ')',
+      'class 수행평가조 : Room() {',
+      '',
+      '    override val members = listOf(나, 고양이발, 새벽세시)',
     ]);
+    expect(texts(lines), contains('    // 10월 14일 (수)'));
+    expect(texts(lines), contains('    fun day1014() {'));
+    expect(texts(lines), contains('    fun day1015() {'));
+    expect(texts(lines).last, '}');
   });
 
-  test('따옴표, 역슬래시, 달러는 Kotlin 문자열처럼 이스케이프', () {
-    final lines = ConversationCode.build(
-      roomName: '방',
-      members: members,
-      messages: [message('1', 'cat', r'"$5" \ 끝', at(9, 0))],
-    );
+  test('모든 메시지 내용이 따옴표 안에 그대로 들어감', () {
+    final lines = build([
+      message('1', 'cat', '발표 자료 올릴게', at(14, 4)),
+      message('2', 'dawn', '잠깐 나 할 말 있어', at(14, 15)),
+      message('3', 'me', 'ㅇㅋ', at(14, 18)),
+    ]);
 
-    final line = lines.firstWhere((line) => line.messageId == '1');
-    expect(line.text, r'        message(고양이발, "\"\$5\" \\ 끝", at(9, 0)),');
+    for (final (id, text) in [
+      ('1', '"발표 자료 올릴게"'),
+      ('2', '"잠깐 나 할 말 있어"'),
+      ('3', '"ㅇㅋ"'),
+    ]) {
+      expect(
+        lines.where((line) => line.messageId == id).single.text,
+        contains(text),
+      );
+    }
+  });
+
+  test('대화가 길어지면 여러 가지 코드 모양이 섞임', () {
+    final lines = build([
+      for (var i = 0; i < 24; i++)
+        message('$i', i.isEven ? 'cat' : 'dawn', '메시지 $i', at(10, i)),
+    ]);
+    final code = texts(lines).join('\n');
+
+    final shapes = [
+      RegExp(r'\.run \{'),
+      RegExp(r'^        val \w+ = listOf\(', multiLine: true),
+      RegExp(r'if \(.+\.isOnline\)'),
+      RegExp(r'notes\["'),
+      RegExp(r'check\('),
+      RegExp(r'val \S+\d{4} = "'),
+    ].where((shape) => shape.hasMatch(code));
+
+    expect(shapes.length, greaterThanOrEqualTo(4));
+  });
+
+  test('한 사람이 길게 보내도 같은 모양만 반복되지 않음', () {
+    final lines = build([
+      for (var i = 0; i < 12; i++) message('m$i', 'me', '메시지 $i', at(10, i)),
+    ]);
+    final code = texts(lines).join('\n');
+
+    final shapes = [
+      RegExp(r'\.run \{'),
+      RegExp(r'^        val \w+ = listOf\(', multiLine: true),
+      RegExp(r'if \(.+\.isOnline\)'),
+      RegExp(r'notes\["'),
+      RegExp(r'check\('),
+      RegExp(r'val \S+\d{4} = "'),
+    ].where((shape) => shape.hasMatch(code));
+
+    expect(shapes.length, greaterThanOrEqualTo(3));
+  });
+
+  test('같은 날짜 안에서 변수 이름이 겹치지 않음', () {
+    final lines = build([
+      for (var i = 0; i < 40; i++)
+        message('$i', i % 3 == 0 ? 'dawn' : 'cat', '메시지 $i', at(10, 0)),
+    ]);
+
+    final names = [
+      for (final text in texts(lines))
+        if (RegExp(r'^        val (\S+) = ').firstMatch(text) case final match?)
+          match.group(1),
+    ];
+    expect(names.toSet(), hasLength(names.length));
+  });
+
+  test('같은 대화는 항상 같은 코드로 바뀜', () {
+    List<Message> conversation() => [
+      for (var i = 0; i < 10; i++)
+        message('$i', i.isEven ? 'cat' : 'dawn', '메시지 $i', at(10, i)),
+    ];
+
+    expect(texts(build(conversation())), texts(build(conversation())));
+  });
+
+  test('닉네임 바꿈 시스템 메시지는 rename 호출', () {
+    final lines = build([
+      message('1', 'cat', '감자 → 감자튀김', at(14, 17), isSystem: true),
+    ]);
+
     expect(
-      line.tokens
-          .where((token) => token.kind == CodeTokenKind.escape)
-          .map((token) => token.text),
-      [r'\"', r'\$', r'\"', r'\\'],
+      lines.where((line) => line.messageId == '1').single.text,
+      '        rename(from = "감자", to = "감자튀김") // 14:17',
     );
   });
 
-  test('여러 줄 메시지의 모든 줄이 같은 메시지로 묶임', () {
-    final lines = ConversationCode.build(
-      roomName: '방',
-      members: members,
-      messages: [message('1', 'cat', 'a\n||b||', at(9, 0))],
-    );
+  test('새 메시지 표시 아래 메시지만 변경 표시', () {
+    final lines = build([
+      message('1', 'cat', 'a', at(9, 0)),
+      message('2', 'me', 'b', at(9, 5)),
+    ], newMessagesAfter: at(9, 1));
 
-    final messageLines = lines.where((line) => line.messageId == '1');
+    expect(texts(lines), contains('        // TODO: 새 메시지'));
+    expect(lines.firstWhere((line) => line.messageId == '1').changed, isFalse);
+    expect(lines.firstWhere((line) => line.messageId == '2').changed, isTrue);
+  });
+
+  test('새 메시지가 여러 날짜에 걸쳐도 새 메시지 표시는 한 번만', () {
+    final lines = build([
+      message('1', 'cat', 'a', at(9, 0)),
+      message('2', 'me', 'b', at(9, 5)),
+      message('3', 'cat', 'c', at(10, 0, day: 15)),
+    ], newMessagesAfter: at(9, 1));
+
+    expect(
+      texts(lines).where((text) => text.contains('TODO: 새 메시지')),
+      hasLength(1),
+    );
+  });
+
+  test('여러 줄 메시지는 """ 문자열로, 모든 줄이 같은 메시지로 묶임', () {
+    final lines = build([message('1', 'cat', 'a\n||b||', at(9, 0))]);
+
+    final messageLines = lines.where((line) => line.messageId == '1').toList();
     expect(messageLines, hasLength(4));
+    expect(messageLines.first.text, endsWith('"""'));
+    expect(messageLines.last.text.trimLeft(), startsWith('""".trimIndent()'));
     expect(
       messageLines
           .expand((line) => line.tokens)
@@ -102,38 +192,28 @@ void main() {
     );
   });
 
-  test('여러 줄 문자열 안의 달러와 따옴표 세 개는 Kotlin처럼 이스케이프', () {
-    final lines = ConversationCode.build(
-      roomName: '방',
-      members: members,
-      messages: [message('1', 'cat', 'a\n\$5 """끝', at(9, 0))],
-    );
+  test('한 줄 문자열의 따옴표, 역슬래시, 달러는 이스케이프', () {
+    final lines = build([message('1', 'cat', r'"$5" \ 끝', at(9, 0))]);
 
-    final body = lines.where((line) => line.messageId == '1').elementAt(2);
-    expect(body.text, r"""            ${'$'}5 ""${'"'}끝""");
+    final line = lines.firstWhere((line) => line.messageId == '1');
+    expect(line.text, contains(r'"\"\$5\" \\ 끝"'));
+    expect(
+      line.tokens
+          .where((token) => token.kind == CodeTokenKind.escape)
+          .map((token) => token.text),
+      [r'\"', r'\$', r'\"', r'\\'],
+    );
   });
 
-  test('새 메시지 아래 줄만 변경 표시', () {
-    final lines = ConversationCode.build(
-      roomName: '방',
-      members: members,
-      messages: [
-        message('1', 'cat', 'a', at(9, 0)),
-        message('2', 'me', 'b', at(9, 5)),
-      ],
-      newMessagesAfter: at(9, 1),
-    );
+  test('여러 줄 문자열의 달러와 따옴표 세 개는 이스케이프', () {
+    final lines = build([message('1', 'cat', 'a\n\$5 """끝', at(9, 0))]);
 
-    expect(lines.firstWhere((line) => line.messageId == '1').changed, isFalse);
-    expect(lines.firstWhere((line) => line.messageId == '2').changed, isTrue);
+    final body = lines.where((line) => line.messageId == '1').elementAt(2);
+    expect(body.text.trim(), r"""${'$'}5 ""${'"'}끝""");
   });
 
   test('비밀 구간은 비밀 표시가 붙은 조각으로 나옴', () {
-    final lines = ConversationCode.build(
-      roomName: '방',
-      members: members,
-      messages: [message('1', 'cat', '내일 ||9시|| 정문', at(9, 0))],
-    );
+    final lines = build([message('1', 'cat', '내일 ||9시|| 정문', at(9, 0))]);
 
     final messageLine = lines.firstWhere((line) => line.messageId == '1');
     final secret = messageLine.tokens.where((token) => token.secret);
