@@ -21,11 +21,18 @@ import 'features/settings/presentation/theme_cubit.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await windowManager.ensureInitialized();
-  await AppShell().start();
+  final shell = AppShell();
+  await shell.start();
   LicenseRegistry.addLicense(_fontLicenses);
 
   final settings = LocalSettingsRepository();
   final lock = LockCubit(LocalAuthenticator());
+  shell.bindLock(
+    locked: lock.isLocked,
+    lockedChanges: lock.stream.map((_) => lock.isLocked).distinct(),
+    onLock: lock.lock,
+    onUnlock: lock.unlock,
+  );
   runApp(
     HushApp(
       repository: FakeChatRepository(),

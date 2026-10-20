@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui';
 
 import 'package:tray_manager/tray_manager.dart';
@@ -8,7 +9,11 @@ import 'screen_cover.dart';
 
 class AppShell with WindowListener {
   TrayIcon? _trayIcon;
-  Menu? _menu;
+  Menu? _unlockedMenu;
+  Menu? _lockedMenu;
+  void Function()? _onLock;
+  Future<void> Function()? _onUnlock;
+  StreamSubscription<bool>? _lockSubscription;
 
   Future<void> start() async {
     await windowManager.setPreventClose(true);
@@ -22,20 +27,50 @@ class AppShell with WindowListener {
   }
 
   void _createTrayIcon() {
-    final menu = Menu.create()!
+    final unlockedMenu = Menu.create()!
       ..addItem(_menuItem('열기', _showWindow))
+      ..addItem(_menuItem('지금 잠그기', () async => _onLock?.call()))
+      ..addSeparator()
+      ..addItem(_menuItem('종료', _quit));
+    final lockedMenu = Menu.create()!
+      ..addItem(_menuItem('잠금 해제', _unlock))
       ..addSeparator()
       ..addItem(_menuItem('종료', _quit));
 
     final trayIcon = TrayIcon.create()!
       ..setTitle('{ }')
       ..setTooltip('hush')
-      ..setContextMenu(menu)
+      ..setContextMenu(lockedMenu)
       ..setContextMenuTrigger(ContextMenuTrigger.clicked)
       ..setVisible(true);
 
-    _menu = menu;
+    _unlockedMenu = unlockedMenu;
+    _lockedMenu = lockedMenu;
     _trayIcon = trayIcon;
+  }
+
+  void bindLock({
+    required bool locked,
+    required Stream<bool> lockedChanges,
+    required void Function() onLock,
+    required Future<void> Function() onUnlock,
+  }) {
+    _onLock = onLock;
+    _onUnlock = onUnlock;
+    _showMenuFor(locked: locked);
+    _lockSubscription?.cancel();
+    _lockSubscription = lockedChanges.listen(
+      (locked) => _showMenuFor(locked: locked),
+    );
+  }
+
+  void _showMenuFor({required bool locked}) {
+    _trayIcon?.setContextMenu(locked ? _lockedMenu : _unlockedMenu);
+  }
+
+  Future<void> _unlock() async {
+    await _showWindow();
+    await _onUnlock?.call();
   }
 
   MenuItem _menuItem(String label, Future<void> Function() onClick) {
@@ -54,8 +89,10 @@ class AppShell with WindowListener {
   }
 
   Future<void> _quit() async {
+    await _lockSubscription?.cancel();
     _trayIcon?.dispose();
-    _menu?.dispose();
+    _unlockedMenu?.dispose();
+    _lockedMenu?.dispose();
     await windowManager.setPreventClose(false);
     await windowManager.destroy();
   }
