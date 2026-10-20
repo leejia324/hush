@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../theme/ide_colors.dart';
-import '../theme/ide_theme.dart';
+import '../../../core/theme/ide_colors.dart';
+import '../../../core/theme/ide_theme.dart';
 
-final screenCovered = ValueNotifier<bool>(false);
-
-final coverHotKeyRegistered = ValueNotifier<bool?>(null);
-
-class ScreenCover extends StatelessWidget {
-  const ScreenCover({super.key});
+class DisguiseScreen extends StatelessWidget {
+  const DisguiseScreen({super.key});
 
   static const _code = '''
 package notes.data

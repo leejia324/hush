@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hush/core/platform/screen_cover.dart';
 import 'package:hush/core/theme/ide_theme.dart';
 import 'package:hush/features/chat/data/fake_chat_repository.dart';
 import 'package:hush/features/chat/presentation/widgets/editor_tab_bar.dart';
@@ -10,6 +9,7 @@ import 'package:hush/features/chat/presentation/widgets/panel_resize_handle.dart
 import 'package:hush/features/chat/presentation/widgets/project_panel.dart';
 import 'package:hush/features/chat/presentation/widgets/terminal_composer.dart';
 import 'package:hush/features/settings/domain/theme_preference.dart';
+import 'package:hush/features/lock/presentation/disguise_screen.dart';
 import 'package:hush/features/lock/presentation/lock_cubit.dart';
 import 'package:hush/features/lock/presentation/lock_gate.dart';
 import 'package:hush/main.dart';
@@ -19,18 +19,21 @@ import 'support/memory_settings_repository.dart';
 
 void main() {
   late MemorySettingsRepository settings;
+  late LockCubit lock;
 
   Future<void> pumpApp(WidgetTester tester) async {
     tester.view.physicalSize = const Size(1400, 900);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     settings = MemorySettingsRepository();
+    lock = LockCubit(FakeAuthenticator(), locked: false);
+    addTearDown(lock.close);
 
     await tester.pumpWidget(
       HushApp(
         repository: FakeChatRepository(now: () => DateTime(2026, 10, 14, 15)),
         settingsRepository: settings,
-        lockCubit: LockCubit(FakeAuthenticator(), locked: false),
+        lockCubit: lock,
         unlockOnStart: false,
       ),
     );
@@ -52,7 +55,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
-    expect(find.byType(ScreenCover), findsOneWidget);
+    expect(find.byType(DisguiseScreen), findsOneWidget);
   });
 
   testWidgets('잠긴 상태에서 Enter를 누르면 다시 인증 창이 뜸', (tester) async {
@@ -201,13 +204,13 @@ void main() {
         MaterialApp(
           theme: IdeTheme.dark(),
           home: Scaffold(
-            body: IdeToolbar(onCover: () {}, onLock: () {}, onSettings: () {}),
+            body: IdeToolbar(onLock: () {}, onSettings: () {}),
           ),
         ),
       );
 
       expect(tester.takeException(), isNull);
-      expect(find.byTooltip('화면 가리기 ⌥Space'), findsOneWidget);
+      expect(find.byTooltip('지금 잠그기 ⌥Space'), findsOneWidget);
     });
   }
 
@@ -248,8 +251,7 @@ void main() {
     expect(settings.saved, ThemePreference.system);
   });
 
-  testWidgets('화면 가리기를 풀어도 열어 둔 탭이 남아 있음', (tester) async {
-    addTearDown(() => screenCovered.value = false);
+  testWidgets('잠갔다가 풀어도 열어 둔 탭이 남아 있음', (tester) async {
     await pumpApp(tester);
     await tester.tap(find.text('동아리방.kt').first);
     await tester.runAsync(
@@ -257,9 +259,9 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    screenCovered.value = true;
+    lock.lock();
     await tester.pump();
-    screenCovered.value = false;
+    await lock.unlock();
     await tester.pumpAndSettle();
 
     final tabs = find.byType(EditorTabBar);
@@ -276,32 +278,9 @@ void main() {
   testWidgets('툴바 자물쇠를 누르면 잠김', (tester) async {
     await pumpApp(tester);
 
-    await tester.tap(find.byTooltip('지금 잠그기 ⇧⌘L'));
+    await tester.tap(find.byTooltip('지금 잠그기 ⌥Space'));
     await tester.pumpAndSettle();
 
     expect(find.byType(LockScreen), findsOneWidget);
-  });
-
-  testWidgets('⇧⌘L을 누르면 잠김', (tester) async {
-    await pumpApp(tester);
-
-    await tester.sendKeyDownEvent(LogicalKeyboardKey.metaLeft);
-    await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
-    await tester.sendKeyEvent(LogicalKeyboardKey.keyL);
-    await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
-    await tester.sendKeyUpEvent(LogicalKeyboardKey.metaLeft);
-    await tester.pumpAndSettle();
-
-    expect(find.byType(LockScreen), findsOneWidget);
-  });
-
-  testWidgets('화면 가리기를 켜면 코드 화면으로 바뀜', (tester) async {
-    addTearDown(() => screenCovered.value = false);
-    await pumpApp(tester);
-
-    screenCovered.value = true;
-    await tester.pump();
-
-    expect(find.byType(ScreenCover), findsOneWidget);
   });
 }

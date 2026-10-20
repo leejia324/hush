@@ -5,7 +5,6 @@ import 'package:tray_manager/tray_manager.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'global_hotkey.dart';
-import 'screen_cover.dart';
 
 class AppShell with WindowListener {
   TrayIcon? _trayIcon;
@@ -14,16 +13,14 @@ class AppShell with WindowListener {
   void Function()? _onLock;
   Future<void> Function()? _onUnlock;
   StreamSubscription<bool>? _lockSubscription;
+  var _locked = true;
 
   Future<void> start() async {
     await windowManager.setPreventClose(true);
     await windowManager.setMinimumSize(const Size(800, 560));
     windowManager.addListener(this);
     _createTrayIcon();
-    coverHotKeyRegistered.value = await const GlobalHotKey()
-        .registerOptionSpace(
-          onPressed: () => screenCovered.value = !screenCovered.value,
-        );
+    await const GlobalHotKey().registerOptionSpace(onPressed: _onHotKey);
   }
 
   void _createTrayIcon() {
@@ -68,7 +65,16 @@ class AppShell with WindowListener {
     );
   }
 
+  void _onHotKey() {
+    if (_locked) {
+      _unlock();
+    } else {
+      _onLock?.call();
+    }
+  }
+
   void _showMenuFor({required bool locked}) {
+    _locked = locked;
     _trayIcon?.setContextMenu(locked ? _lockedMenu : _unlockedMenu);
   }
 

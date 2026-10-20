@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hush/core/platform/screen_cover.dart';
 import 'package:hush/core/theme/ide_theme.dart';
+import 'package:hush/features/lock/presentation/disguise_screen.dart';
 import 'package:hush/features/lock/presentation/lock_cubit.dart';
 import 'package:hush/features/lock/presentation/lock_gate.dart';
 
@@ -36,7 +36,7 @@ void main() {
   testWidgets('잠겨 있으면 위장 코드만 보이고 대화는 안 보임', (tester) async {
     await pumpGate(tester, FakeAuthenticator(result: false));
 
-    expect(find.byType(ScreenCover), findsOneWidget);
+    expect(find.byType(DisguiseScreen), findsOneWidget);
     expect(find.text('대화 화면'), findsNothing);
   });
 
@@ -46,7 +46,7 @@ void main() {
     await tester.tap(find.byTooltip('잠금 해제 (Enter)'));
     await tester.pumpAndSettle();
 
-    expect(find.byType(ScreenCover), findsNothing);
+    expect(find.byType(DisguiseScreen), findsNothing);
     expect(find.text('대화 화면'), findsOneWidget);
   });
 
@@ -67,7 +67,7 @@ void main() {
     await tester.tap(find.byTooltip('잠금 해제 (Enter)'));
     await tester.pumpAndSettle();
 
-    expect(find.byType(ScreenCover), findsOneWidget);
+    expect(find.byType(DisguiseScreen), findsOneWidget);
   });
 
   testWidgets('앱을 켜면 바로 인증 창이 한 번 뜸', (tester) async {

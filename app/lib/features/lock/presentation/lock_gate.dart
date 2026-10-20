@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../core/platform/screen_cover.dart';
 import '../../../core/theme/ide_colors.dart';
+import 'disguise_screen.dart';
 import 'lock_cubit.dart';
 
 class LockGate extends StatefulWidget {
@@ -88,7 +88,7 @@ class LockScreen extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          const ScreenCover(),
+          const DisguiseScreen(),
           Positioned(
             right: 12,
             bottom: 8,
