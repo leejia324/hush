@@ -29,24 +29,30 @@ class _LockGateState extends State<LockGate> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<LockCubit, LockStatus>(
-      builder: (context, status) {
-        final locked = status != LockStatus.unlocked;
-        return Stack(
-          fit: StackFit.expand,
-          children: [
-            ExcludeFocus(
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        BlocBuilder<LockCubit, LockStatus>(
+          builder: (context, status) {
+            final locked = status != LockStatus.unlocked;
+            return ExcludeFocus(
               excluding: locked,
               child: Visibility(
                 visible: !locked,
                 maintainState: true,
                 child: widget.child,
               ),
-            ),
-            if (locked) LockScreen(unlocking: status == LockStatus.unlocking),
-          ],
-        );
-      },
+            );
+          },
+        ),
+        Overlay.wrap(
+          child: BlocBuilder<LockCubit, LockStatus>(
+            builder: (context, status) => status == LockStatus.unlocked
+                ? const SizedBox.shrink()
+                : LockScreen(unlocking: status == LockStatus.unlocking),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -59,33 +65,36 @@ class LockScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = IdeColors.of(context);
-    return Focus(
-      autofocus: true,
-      onKeyEvent: (_, event) {
-        if (event is KeyDownEvent &&
-            event.logicalKey == LogicalKeyboardKey.enter) {
-          context.read<LockCubit>().unlock();
-          return KeyEventResult.handled;
-        }
-        return KeyEventResult.ignored;
-      },
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          const ScreenCover(),
-          Positioned(
-            right: 12,
-            bottom: 8,
-            child: IconButton(
-              onPressed: unlocking ? null : context.read<LockCubit>().unlock,
-              tooltip: '잠금 해제 (Enter)',
-              iconSize: 16,
-              color: colors.comment,
-              disabledColor: colors.lineNumber,
-              icon: const Icon(Icons.lock_outline),
+    return Material(
+      type: MaterialType.transparency,
+      child: Focus(
+        autofocus: true,
+        onKeyEvent: (_, event) {
+          if (event is KeyDownEvent &&
+              event.logicalKey == LogicalKeyboardKey.enter) {
+            context.read<LockCubit>().unlock();
+            return KeyEventResult.handled;
+          }
+          return KeyEventResult.ignored;
+        },
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            const ScreenCover(),
+            Positioned(
+              right: 12,
+              bottom: 8,
+              child: IconButton(
+                onPressed: unlocking ? null : context.read<LockCubit>().unlock,
+                tooltip: '잠금 해제 (Enter)',
+                iconSize: 16,
+                color: colors.comment,
+                disabledColor: colors.lineNumber,
+                icon: const Icon(Icons.lock_outline),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

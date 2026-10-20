@@ -36,6 +36,24 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  testWidgets('잠긴 상태로 켜도 오류 없이 잠금 화면이 보임', (tester) async {
+    tester.view.physicalSize = const Size(1400, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      HushApp(
+        repository: FakeChatRepository(now: () => DateTime(2026, 10, 14, 15)),
+        settingsRepository: MemorySettingsRepository(),
+        lockCubit: LockCubit(FakeAuthenticator(result: false)),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.byType(ScreenCover), findsOneWidget);
+  });
+
   testWidgets('첫 방의 대화를 코드 형식으로 보여 줌', (tester) async {
     await pumpApp(tester);
 
