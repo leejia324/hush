@@ -41,8 +41,12 @@ class AppShell with WindowListener {
       ..setTitle('{ }')
       ..setTooltip('hush')
       ..setContextMenu(lockedMenu)
-      ..setContextMenuTrigger(ContextMenuTrigger.clicked)
       ..setVisible(true);
+    trayIcon.addListener((event) {
+      if (event is TrayIconClickedEvent || event is TrayIconRightClickedEvent) {
+        trayIcon.openContextMenu();
+      }
+    });
 
     _unlockedMenu = unlockedMenu;
     _lockedMenu = lockedMenu;
