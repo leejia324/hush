@@ -8,10 +8,12 @@ class IdeToolbar extends StatelessWidget {
   const IdeToolbar({
     super.key,
     required this.onCover,
+    required this.onLock,
     required this.onSettings,
   });
 
   final VoidCallback onCover;
+  final VoidCallback onLock;
   final VoidCallback onSettings;
 
   @override
@@ -138,6 +140,11 @@ class IdeToolbar extends StatelessWidget {
                 icon: Icons.visibility_off_outlined,
                 tooltip: '화면 가리기 ⌥Space',
                 onPressed: onCover,
+              ),
+              _ToolbarButton(
+                icon: Icons.lock_outline,
+                tooltip: '지금 잠그기 ⇧⌘L',
+                onPressed: onLock,
               ),
               if (showExtras)
                 _ToolbarButton(

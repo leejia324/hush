@@ -11,6 +11,7 @@ import 'package:hush/features/chat/presentation/widgets/project_panel.dart';
 import 'package:hush/features/chat/presentation/widgets/terminal_composer.dart';
 import 'package:hush/features/settings/domain/theme_preference.dart';
 import 'package:hush/features/lock/presentation/lock_cubit.dart';
+import 'package:hush/features/lock/presentation/lock_gate.dart';
 import 'package:hush/main.dart';
 
 import 'support/fake_authenticator.dart';
@@ -200,7 +201,7 @@ void main() {
         MaterialApp(
           theme: IdeTheme.dark(),
           home: Scaffold(
-            body: IdeToolbar(onCover: () {}, onSettings: () {}),
+            body: IdeToolbar(onCover: () {}, onLock: () {}, onSettings: () {}),
           ),
         ),
       );
@@ -270,6 +271,28 @@ void main() {
       find.descendant(of: tabs, matching: find.text('동아리방.kt')),
       findsOneWidget,
     );
+  });
+
+  testWidgets('툴바 자물쇠를 누르면 잠김', (tester) async {
+    await pumpApp(tester);
+
+    await tester.tap(find.byTooltip('지금 잠그기 ⇧⌘L'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(LockScreen), findsOneWidget);
+  });
+
+  testWidgets('⇧⌘L을 누르면 잠김', (tester) async {
+    await pumpApp(tester);
+
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.metaLeft);
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
+    await tester.sendKeyEvent(LogicalKeyboardKey.keyL);
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.metaLeft);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(LockScreen), findsOneWidget);
   });
 
   testWidgets('화면 가리기를 켜면 코드 화면으로 바뀜', (tester) async {

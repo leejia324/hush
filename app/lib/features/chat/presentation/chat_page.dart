@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/platform/screen_cover.dart';
 import '../../../core/theme/ide_colors.dart';
 import '../../../core/theme/ide_theme.dart';
+import '../../lock/presentation/lock_cubit.dart';
 import '../../settings/presentation/settings_dialog.dart';
 import '../domain/chat_repository.dart';
 import 'bloc/chat_cubit.dart';
@@ -112,6 +113,12 @@ class _IdeLayoutState extends State<_IdeLayout> {
       bindings: {
         const SingleActivator(LogicalKeyboardKey.digit1, meta: true):
             _toggleProjectPanel,
+        const SingleActivator(
+          LogicalKeyboardKey.keyL,
+          meta: true,
+          shift: true,
+        ): () =>
+            context.read<LockCubit>().lock(),
       },
       child: Scaffold(
         body: BlocConsumer<ChatCubit, ChatState>(
@@ -134,6 +141,7 @@ class _IdeLayoutState extends State<_IdeLayout> {
               children: [
                 IdeToolbar(
                   onCover: () => screenCovered.value = true,
+                  onLock: context.read<LockCubit>().lock,
                   onSettings: () => SettingsDialog.show(context),
                 ),
                 Expanded(
